@@ -4,17 +4,20 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY frontend/package*.json ./
+# Install yarn globally
+RUN npm install -g yarn
 
-# Install dependencies
-RUN npm ci --only=production
+# Copy package files (yarn.lock is important!)
+COPY frontend/package.json frontend/yarn.lock ./
+
+# Install dependencies using yarn
+RUN yarn install --frozen-lockfile --production=false
 
 # Copy source code
 COPY frontend/ .
 
 # Build the application
-RUN npm run build
+RUN yarn build
 
 # Production stage
 FROM nginx:alpine AS production
