@@ -229,6 +229,66 @@ frontend:
         agent: "testing"
         comment: "NEW COMPONENT: VideoPlayer component fully functional with YouTube integration and progress tracking. Features tested: ✅ YouTube iframe API integration working correctly, ✅ Video progress tracking with automatic updates to backend every 10 seconds, ✅ Custom controls overlay with play/pause, mute/unmute, fullscreen functionality, ✅ Progress bar showing current playback position, ✅ Time display showing current time and duration, ✅ Progress percentage display, ✅ Automatic completion detection at 90% progress, ✅ onProgressUpdate callback integration, ✅ Autoplay functionality, ✅ Responsive design with proper aspect ratio, ✅ Error handling and cleanup on component unmount. Player integrates seamlessly with backend progress tracking system."
 
+  - task: "User Authentication and Recognition Issue"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "User reported: 'Users can be created, but new users are not recognized/cannot log in'. Need to verify user authentication flow and ensure created users can actually login successfully."
+
+  - task: "Optional Field Validation Fix"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "User reported: 'Fields that should be optional are currently mandatory'. Need to review form validation to ensure optional fields can be left empty without errors."
+
+  - task: "Video Thumbnail Management"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "User reported missing: 'Option to change video thumbnails and manage them completely'. Code shows thumbnail editing functionality in video edit modal, needs verification."
+
+  - task: "Category Management Functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "User reported missing: 'Ability to create or edit categories'. Code shows category creation and deletion in admin panel, needs verification."
+
+  - task: "Landing Page Text Editing"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "User reported missing: 'Ability to edit texts on the portada (landing page)'. Code shows heroTitle and heroSubtitle editing in settings, needs verification."
+
 metadata:
   created_by: "main_agent"
   version: "2.1"
