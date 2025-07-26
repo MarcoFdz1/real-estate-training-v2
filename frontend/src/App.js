@@ -589,34 +589,34 @@ function App() {
           <h1 className="text-sm sm:text-xl font-bold text-[#C5A95E] truncate">{customization.companyName}</h1>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-1 sm:space-x-4 flex-shrink-0">
           <button
             onClick={() => setCurrentView('videos')}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
               currentView === 'videos' 
                 ? 'bg-[#C5A95E] text-white' 
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
-            <Home size={20} />
+            <Home size={16} className="sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={() => setCurrentView('dashboard')}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
               currentView === 'dashboard' 
                 ? 'bg-[#C5A95E] text-white' 
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
-            <BarChart3 size={20} />
+            <BarChart3 size={16} className="sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full bg-[#C5A95E] text-white hover:bg-[#B8975A] transition-colors"
+            className="p-1.5 sm:p-2 rounded-full bg-[#C5A95E] text-white hover:bg-[#B8975A] transition-colors"
           >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === 'dark' ? <Sun size={16} className="sm:w-5 sm:h-5" /> : <Moon size={16} className="sm:w-5 sm:h-5" />}
           </button>
 
           {userRole === 'admin' && (
