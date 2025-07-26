@@ -246,11 +246,11 @@ frontend:
 
   - task: "Optional Field Validation Fix"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
     status_history:
       - working: false
         agent: "main"
@@ -261,6 +261,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "OPTIONAL FIELD VALIDATION FIX VERIFIED: ✅ Video creation with MINIMAL required fields (title, youtubeId, categoryId) works perfectly - SUCCESS. ✅ Optional fields automatically get default values: description='', duration='45 min', match='95%', difficulty='Intermedio', rating=4.5, views=0, thumbnail auto-generated from youtubeId, releaseDate auto-generated as today's date - ALL SUCCESS. ✅ Category creation with minimal fields (name, icon) works with description defaulting to empty string - SUCCESS. ✅ Video progress creation with minimal fields (user_email, video_id) works with defaults: progress_percentage=0.0, watch_time=0, completed=false - SUCCESS. All 42 backend tests passed with 100% success rate. The Optional Field Validation Fix is working correctly - users can now create videos, categories, and video progress with only the required fields, and all optional fields receive appropriate default values automatically."
+      - working: false
+        agent: "main"
+        comment: "USER FEEDBACK: 'Me sigue forzando incluir textos en campos y quiero unos que si no escribo nada quede vacío.' Frontend still forcing text in some fields that should be optional. Need to review frontend validation and form requirements."
 
   - task: "Video Thumbnail Management"
     implemented: true
