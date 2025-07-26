@@ -124,15 +124,15 @@ class Video(BaseModel):
 
 class VideoCreate(BaseModel):
     title: str
-    description: str
-    thumbnail: str
-    duration: str
+    description: Optional[str] = ""
+    thumbnail: Optional[str] = None  # Will be auto-generated from youtubeId if not provided
+    duration: Optional[str] = "45 min"
     youtubeId: str
-    match: str
-    difficulty: str
-    rating: float
-    views: int
-    releaseDate: str
+    match: Optional[str] = "95%"
+    difficulty: Optional[str] = "Intermedio"
+    rating: Optional[float] = 4.5
+    views: Optional[int] = 0
+    releaseDate: Optional[str] = None  # Will be auto-generated if not provided
     categoryId: str
 
 class Category(BaseModel):
