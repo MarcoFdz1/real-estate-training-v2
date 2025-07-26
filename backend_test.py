@@ -699,6 +699,184 @@ def print_summary():
     else:
         print(f"\n⚠️ {test_results['failed']} tests failed. Please check the details above.")
 
+def test_optional_field_validation():
+    """Test Optional Field Validation Fix - Focus on minimal required fields"""
+    print("\n=== Testing Optional Field Validation Fix ===\n")
+    
+    # First, get a category ID to use
+    response = requests.get(f"{API_URL}/categories")
+    categories = response.json() if response.status_code == 200 else []
+    
+    if not categories:
+        log_test("Get Category for Optional Field Tests", False, "No categories found to use for optional field tests")
+        return
+    
+    category_id = categories[0]["id"]
+    
+    # Test 1: Create video with MINIMAL required fields only (title, youtubeId, categoryId)
+    minimal_video_data = {
+        "title": f"Minimal Video Test {uuid.uuid4()}",
+        "youtubeId": "dQw4w9WgXcQ",
+        "categoryId": category_id
+    }
+    
+    response = requests.post(f"{API_URL}/videos", json=minimal_video_data)
+    video_created = response.status_code == 200 and "id" in response.json()
+    
+    log_test(
+        "Create Video with Minimal Fields", 
+        video_created,
+        f"Status: {response.status_code}",
+        response.json() if response.status_code == 200 else response.text
+    )
+    
+    if video_created:
+        video_id = response.json()["id"]
+        created_video = response.json()
+        
+        # Test 2: Verify optional fields got default values automatically
+        expected_defaults = {
+            "description": "",
+            "duration": "45 min",
+            "match": "95%",
+            "difficulty": "Intermedio",
+            "rating": 4.5,
+            "views": 0
+        }
+        
+        defaults_applied = True
+        default_check_details = {}
+        
+        for field, expected_value in expected_defaults.items():
+            actual_value = created_video.get(field)
+            field_correct = actual_value == expected_value
+            defaults_applied = defaults_applied and field_correct
+            default_check_details[field] = {
+                "expected": expected_value,
+                "actual": actual_value,
+                "correct": field_correct
+            }
+        
+        # Check thumbnail auto-generation
+        expected_thumbnail = f"https://img.youtube.com/vi/{minimal_video_data['youtubeId']}/maxresdefault.jpg"
+        thumbnail_correct = created_video.get("thumbnail") == expected_thumbnail
+        defaults_applied = defaults_applied and thumbnail_correct
+        default_check_details["thumbnail"] = {
+            "expected": expected_thumbnail,
+            "actual": created_video.get("thumbnail"),
+            "correct": thumbnail_correct
+        }
+        
+        # Check releaseDate auto-generation (should be today's date)
+        release_date = created_video.get("releaseDate")
+        from datetime import datetime
+        today = datetime.utcnow().strftime('%Y-%m-%d')
+        release_date_correct = release_date == today
+        defaults_applied = defaults_applied and release_date_correct
+        default_check_details["releaseDate"] = {
+            "expected": today,
+            "actual": release_date,
+            "correct": release_date_correct
+        }
+        
+        log_test(
+            "Verify Optional Fields Got Default Values", 
+            defaults_applied,
+            f"All defaults applied: {defaults_applied}",
+            default_check_details
+        )
+        
+        # Clean up - delete the test video
+        requests.delete(f"{API_URL}/videos/{video_id}")
+    
+    # Test 3: Create category with optional description field
+    minimal_category_data = {
+        "name": f"Minimal Category Test {uuid.uuid4()}",
+        "icon": "TestIcon"
+    }
+    
+    response = requests.post(f"{API_URL}/categories", json=minimal_category_data)
+    category_created = response.status_code == 200 and "id" in response.json()
+    
+    log_test(
+        "Create Category with Minimal Fields", 
+        category_created,
+        f"Status: {response.status_code}",
+        response.json() if response.status_code == 200 else response.text
+    )
+    
+    if category_created:
+        category_id = response.json()["id"]
+        created_category = response.json()
+        
+        # Test 4: Verify description gets default empty string
+        description_default = created_category.get("description") == ""
+        
+        log_test(
+            "Verify Category Description Default", 
+            description_default,
+            f"Description default applied: {description_default}",
+            f"Expected: '', Actual: '{created_category.get('description')}'"
+        )
+        
+        # Clean up - delete the test category
+        requests.delete(f"{API_URL}/categories/{category_id}")
+    
+    # Test 5: Test video progress creation with minimal fields
+    user_email = "unbrokerage@realtyonegroupmexico.mx"
+    
+    # Get a video ID for testing
+    response = requests.get(f"{API_URL}/videos")
+    videos = response.json() if response.status_code == 200 else []
+    
+    if videos:
+        video_id = videos[0]["id"]
+        
+        minimal_progress_data = {
+            "user_email": user_email,
+            "video_id": video_id
+        }
+        
+        response = requests.post(f"{API_URL}/video-progress", json=minimal_progress_data)
+        progress_created = response.status_code == 200 and "id" in response.json()
+        
+        log_test(
+            "Create Video Progress with Minimal Fields", 
+            progress_created,
+            f"Status: {response.status_code}",
+            response.json() if response.status_code == 200 else response.text
+        )
+        
+        if progress_created:
+            created_progress = response.json()
+            
+            # Verify defaults for progress
+            progress_defaults = {
+                "progress_percentage": 0.0,
+                "watch_time": 0,
+                "completed": False
+            }
+            
+            progress_defaults_applied = True
+            progress_default_details = {}
+            
+            for field, expected_value in progress_defaults.items():
+                actual_value = created_progress.get(field)
+                field_correct = actual_value == expected_value
+                progress_defaults_applied = progress_defaults_applied and field_correct
+                progress_default_details[field] = {
+                    "expected": expected_value,
+                    "actual": actual_value,
+                    "correct": field_correct
+                }
+            
+            log_test(
+                "Verify Video Progress Default Values", 
+                progress_defaults_applied,
+                f"All progress defaults applied: {progress_defaults_applied}",
+                progress_default_details
+            )
+
 def main():
     """Run all tests"""
     print(f"Testing backend API at: {API_URL}")
@@ -716,7 +894,10 @@ def main():
         print(f"Response: {response.json()}")
         print("="*50 + "\n")
         
-        # Run all test suites
+        # Run focused test for Optional Field Validation Fix
+        test_optional_field_validation()
+        
+        # Run other test suites
         test_auth_login()
         test_user_management()
         test_category_management()
