@@ -425,6 +425,214 @@ async def get_video_detailed(video_id: str):
     stats = await calculate_video_stats(video_id)
     return VideoWithStats(**video, stats=stats)
 
+# Enhanced Video Management Endpoints
+@api_router.put("/videos/{video_id}")
+async def update_video(video_id: str, video_data: VideoCreate):
+    # Check if video exists
+    existing_video = await db.videos.find_one({"id": video_id})
+    if not existing_video:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    # Update video data
+    update_data = video_data.dict()
+    update_data["id"] = video_id  # Keep the same ID
+    
+    result = await db.videos.update_one(
+        {"id": video_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    return {"message": "Video actualizado exitosamente"}
+
+@api_router.delete("/videos/{video_id}")
+async def delete_video(video_id: str):
+    # Delete video
+    result = await db.videos.delete_one({"id": video_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    # Also delete any progress records for this video
+    await db.video_progress.delete_many({"video_id": video_id})
+    
+    return {"message": "Video eliminado exitosamente"}
+
+# Enhanced Category Management Endpoints
+@api_router.post("/categories", response_model=Category)
+async def create_category(category_data: CategoryCreate):
+    category_obj = Category(**category_data.dict())
+    await db.categories.insert_one(category_obj.dict())
+    return category_obj
+
+@api_router.put("/categories/{category_id}")
+async def update_category(category_id: str, category_data: CategoryCreate):
+    result = await db.categories.update_one(
+        {"id": category_id},
+        {"$set": category_data.dict()}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    
+    return {"message": "Categoría actualizada exitosamente"}
+
+@api_router.delete("/categories/{category_id}")
+async def delete_category(category_id: str):
+    # Delete all videos in this category first
+    await db.videos.delete_many({"categoryId": category_id})
+    
+    # Delete the category
+    result = await db.categories.delete_one({"id": category_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    
+    return {"message": "Categoría y videos asociados eliminados exitosamente"}
+
+# Video Progress Tracking Endpoints
+@api_router.post("/video-progress", response_model=VideoProgress)
+async def create_or_update_video_progress(progress_data: VideoProgressCreate):
+    # Check if progress already exists for this user and video
+    existing_progress = await db.video_progress.find_one({
+        "user_email": progress_data.user_email,
+        "video_id": progress_data.video_id
+    })
+    
+    if existing_progress:
+        # Update existing progress
+        update_data = progress_data.dict()
+        update_data["last_watched"] = datetime.utcnow()
+        
+        await db.video_progress.update_one(
+            {"user_email": progress_data.user_email, "video_id": progress_data.video_id},
+            {"$set": update_data}
+        )
+        
+        # Return updated progress
+        updated_progress = await db.video_progress.find_one({
+            "user_email": progress_data.user_email,
+            "video_id": progress_data.video_id
+        })
+        return VideoProgress(**updated_progress)
+    else:
+        # Create new progress record
+        progress_obj = VideoProgress(**progress_data.dict())
+        await db.video_progress.insert_one(progress_obj.dict())
+        return progress_obj
+
+@api_router.get("/video-progress/{user_email}")
+async def get_user_video_progress(user_email: str):
+    progress_list = await db.video_progress.find({"user_email": user_email}).to_list(1000)
+    return [VideoProgress(**progress) for progress in progress_list]
+
+@api_router.get("/video-progress/{user_email}/{video_id}")
+async def get_video_progress(user_email: str, video_id: str):
+    progress = await db.video_progress.find_one({
+        "user_email": user_email,
+        "video_id": video_id
+    })
+    if not progress:
+        return {"progress_percentage": 0.0, "watch_time": 0, "completed": False}
+    return VideoProgress(**progress)
+
+@api_router.put("/video-progress/{user_email}/{video_id}")
+async def update_video_progress(user_email: str, video_id: str, progress_update: VideoProgressUpdate):
+    update_data = {k: v for k, v in progress_update.dict().items() if v is not None}
+    update_data["last_watched"] = datetime.utcnow()
+    
+    result = await db.video_progress.update_one(
+        {"user_email": user_email, "video_id": video_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Progreso no encontrado")
+    
+    return {"message": "Progreso actualizado exitosamente"}
+
+@api_router.get("/dashboard/{user_email}")
+async def get_user_dashboard(user_email: str):
+    # Get all progress for user
+    progress_list = await db.video_progress.find({"user_email": user_email}).to_list(1000)
+    
+    # Calculate statistics
+    total_videos_watched = len(progress_list)
+    total_videos_completed = sum(1 for p in progress_list if p.get("completed", False))
+    total_watch_time = sum(p.get("watch_time", 0) for p in progress_list)
+    completion_rate = (total_videos_completed / total_videos_watched * 100) if total_videos_watched > 0 else 0
+    
+    # Get recent videos (last 5 watched)
+    recent_progress = sorted(progress_list, key=lambda x: x.get("last_watched", datetime.min), reverse=True)[:5]
+    recent_videos = []
+    
+    for progress in recent_progress:
+        video = await db.videos.find_one({"id": progress["video_id"]})
+        if video:
+            video_stats = await calculate_video_stats(progress["video_id"])
+            video_with_stats = VideoWithStats(**video, stats=video_stats)
+            recent_videos.append(video_with_stats)
+    
+    # Get progress by category
+    progress_by_category = {}
+    categories = await db.categories.find().to_list(1000)
+    
+    for category in categories:
+        category_videos = await db.videos.find({"categoryId": category["id"]}).to_list(1000)
+        category_video_ids = [v["id"] for v in category_videos]
+        
+        category_progress = [p for p in progress_list if p["video_id"] in category_video_ids]
+        watched_count = len(category_progress)
+        completed_count = sum(1 for p in category_progress if p.get("completed", False))
+        
+        progress_by_category[category["name"]] = {
+            "total_videos": len(category_videos),
+            "watched_videos": watched_count,
+            "completed_videos": completed_count,
+            "completion_rate": (completed_count / watched_count * 100) if watched_count > 0 else 0
+        }
+    
+    return UserDashboard(
+        user_email=user_email,
+        total_videos_watched=total_videos_watched,
+        total_videos_completed=total_videos_completed,
+        total_watch_time=total_watch_time,
+        completion_rate=completion_rate,
+        recent_videos=recent_videos,
+        progress_by_category=progress_by_category
+    )
+
+# Helper function to calculate video statistics
+async def calculate_video_stats(video_id: str) -> VideoStats:
+    progress_list = await db.video_progress.find({"video_id": video_id}).to_list(1000)
+    
+    total_views = len(progress_list)
+    total_completions = sum(1 for p in progress_list if p.get("completed", False))
+    average_completion_rate = (total_completions / total_views * 100) if total_views > 0 else 0
+    average_watch_time = sum(p.get("watch_time", 0) for p in progress_list) // total_views if total_views > 0 else 0
+    
+    return VideoStats(
+        total_views=total_views,
+        total_completions=total_completions,
+        average_completion_rate=average_completion_rate,
+        average_watch_time=average_watch_time
+    )
+
+@api_router.get("/video-stats/{video_id}")
+async def get_video_stats(video_id: str):
+    stats = await calculate_video_stats(video_id)
+    return stats
+
+# Enhanced video endpoint with statistics
+@api_router.get("/videos/{video_id}/detailed")
+async def get_video_detailed(video_id: str):
+    video = await db.videos.find_one({"id": video_id})
+    if not video:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    stats = await calculate_video_stats(video_id)
+    return VideoWithStats(**video, stats=stats)
+
 # User management endpoints
 @api_router.post("/users", response_model=User)
 async def create_user(user_create: UserCreate):
