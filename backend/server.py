@@ -707,6 +707,15 @@ async def get_all_videos():
 @api_router.post("/videos", response_model=Video)
 async def create_video(video_create: VideoCreate):
     video_dict = video_create.dict()
+    
+    # Auto-generate thumbnail if not provided
+    if not video_dict.get('thumbnail'):
+        video_dict['thumbnail'] = f"https://img.youtube.com/vi/{video_dict['youtubeId']}/maxresdefault.jpg"
+    
+    # Auto-generate releaseDate if not provided
+    if not video_dict.get('releaseDate'):
+        video_dict['releaseDate'] = datetime.utcnow().strftime('%Y-%m-%d')
+    
     video_obj = Video(**video_dict)
     await db.videos.insert_one(video_obj.dict())
     return video_obj
