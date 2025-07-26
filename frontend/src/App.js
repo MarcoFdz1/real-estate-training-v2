@@ -1187,8 +1187,11 @@ function App() {
                       video={video}
                       userEmail={userEmail}
                       onClick={handleVideoClick}
+                      onEdit={editVideo}
+                      onDelete={deleteVideo}
                       theme={theme}
                       showStats={userRole === 'admin'}
+                      userRole={userRole}
                     />
                   ))}
                 </div>
