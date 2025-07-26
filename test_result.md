@@ -344,10 +344,16 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Landing Page Text Editing"
+    - "Optional Field Validation Fix"
+    - "Video Editing for Published Videos"
+    - "Complete Responsive Design and Mobile Optimization"
+  stuck_tasks:
+    - "Landing Page Text Editing"
+    - "Optional Field Validation Fix"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "stuck_first"
 
 agent_communication:
   - agent: "main"
