@@ -294,11 +294,11 @@ frontend:
 
   - task: "Landing Page Text Editing"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -306,6 +306,33 @@ frontend:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE LANDING PAGE TEXT EDITING TESTING COMPLETED: ✅ Retrieved current settings successfully - SUCCESS. ✅ Updated landing page texts (loginTitle, loginSubtitle, companyName) - SUCCESS. ✅ Verified text updates were persisted correctly - SUCCESS. ✅ Updated additional customization settings (logoUrl, loginBackgroundUrl, bannerUrl, theme) - SUCCESS. ✅ Verified all customization updates were persisted correctly - SUCCESS. The landing page text editing functionality is working perfectly. Users can edit all landing page texts including login title, subtitle, company name, and all customization options through the settings API endpoints."
+      - working: false
+        agent: "main"
+        comment: "USER FEEDBACK: 'Si esta la edición de los textos de la portada en el Panel de admin pero no guarda los cambios.' The UI shows text editing fields but changes are not being saved properly. Need to investigate frontend save functionality."
+
+  - task: "Video Editing for Published Videos"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "USER FEEDBACK: 'No hay la opción de poder editar información de los videos que ya están publicadas.' Need to implement UI for editing existing published videos. Backend supports video updates but frontend may be missing the edit functionality."
+
+  - task: "Complete Responsive Design and Mobile Optimization"
+    implemented: false
+    working: false
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "USER FEEDBACK: 'revisar que si sea totalmente respondido para todas las pantallas y que tenga excelente visualización de móviles.' Need to ensure complete responsive design across all screen sizes and optimize mobile experience."
 
 metadata:
   created_by: "main_agent"
