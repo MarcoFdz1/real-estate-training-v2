@@ -374,22 +374,22 @@ function App() {
     }
 
     try {
+      const videoData = {
+        title,
+        youtubeId,
+        categoryId: categoryId.toString()
+      };
+
+      // Only add optional fields if they have values
+      if (description) videoData.description = description;
+      if (thumbnail) videoData.thumbnail = thumbnail;
+      if (duration) videoData.duration = duration;
+      if (difficulty && difficulty !== 'Intermedio') videoData.difficulty = difficulty;
+
       const response = await fetch(`${API_URL}/videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          description: description || '',
-          thumbnail: thumbnail || `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
-          duration: duration || '45 min',
-          youtubeId,
-          match: '95%',
-          difficulty: difficulty || 'Intermedio',
-          rating: 4.5,
-          views: 0,
-          releaseDate: new Date().toISOString().split('T')[0],
-          categoryId: categoryId.toString()
-        })
+        body: JSON.stringify(videoData)
       });
 
       if (response.ok) {
