@@ -576,17 +576,17 @@ function App() {
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} style={{ backgroundColor: theme === 'dark' ? '#000000' : '#f3f4f6' }}>
       <ToastContainer />
-      <header className={`${theme === 'dark' ? 'bg-black' : 'bg-white'} p-4 flex justify-between items-center shadow-lg`}>
-        <div className="flex items-center space-x-3">
+      <header className={`${theme === 'dark' ? 'bg-black' : 'bg-white'} p-2 sm:p-4 flex justify-between items-center shadow-lg`}>
+        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
           {customization.logoUrl && (
             <img 
               src={customization.logoUrl} 
               alt="Logo"
-              className="h-8 object-contain"
+              className="h-6 sm:h-8 object-contain flex-shrink-0"
               onError={(e) => e.target.style.display = 'none'}
             />
           )}
-          <h1 className="text-xl font-bold text-[#C5A95E]">{customization.companyName}</h1>
+          <h1 className="text-sm sm:text-xl font-bold text-[#C5A95E] truncate">{customization.companyName}</h1>
         </div>
 
         <div className="flex items-center space-x-4">
