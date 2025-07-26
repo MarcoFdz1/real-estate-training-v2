@@ -8,15 +8,20 @@ import {
   TrendingUp,
   CheckCircle,
   BarChart3,
-  Calendar
+  Calendar,
+  Edit3,
+  Trash2
 } from 'lucide-react';
 
 const VideoCard = ({ 
   video, 
   userEmail, 
   onClick,
+  onEdit,
+  onDelete,
   theme = 'dark',
   showStats = false,
+  userRole = 'user',
   className = '' 
 }) => {
   const [progress, setProgress] = useState(0);
