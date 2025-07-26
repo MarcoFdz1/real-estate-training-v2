@@ -1138,16 +1138,16 @@ function App() {
         )}
       </AnimatePresence>
 
-      <main className="p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">{customization.heroTitle}</h1>
-          <p className="text-gray-500">{customization.heroSubtitle}</p>
+      <main className="p-3 sm:p-6">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-3xl font-bold mb-2">{customization.heroTitle}</h1>
+          <p className="text-sm sm:text-base text-gray-500">{customization.heroSubtitle}</p>
         </div>
         
         {/* Categories Grid with Videos */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {categories.map((category) => (
-            <div key={category.id} className="space-y-4">
+            <div key={category.id} className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <h2 className="text-2xl font-semibold text-[#C5A95E]">{category.name}</h2>
