@@ -297,11 +297,15 @@ metadata:
 
 test_plan:
   current_focus:
-    - "MongoDB Backend API Endpoints"
-    - "Frontend API Integration"
-  stuck_tasks: []
+    - "User Authentication and Recognition Issue"
+    - "Video Thumbnail Management"
+    - "Category Management Functionality"
+    - "Optional Field Validation Fix"
+    - "Landing Page Text Editing"
+  stuck_tasks:
+    - "User Authentication and Recognition Issue"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "stuck_first"
 
 agent_communication:
   - agent: "main"
