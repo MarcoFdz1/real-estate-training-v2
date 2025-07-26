@@ -1155,28 +1155,6 @@ function App() {
                     ({category.videos?.length || 0} videos)
                   </span>
                 </div>
-                {userRole === 'admin' && category.videos && category.videos.length > 0 && (
-                  <div className="flex space-x-2">
-                    {category.videos.map((video) => (
-                      <div key={video.id} className="flex space-x-1">
-                        <button
-                          onClick={() => editVideo(video)}
-                          className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900 rounded transition-colors"
-                          title="Editar video"
-                        >
-                          <Edit3 size={14} />
-                        </button>
-                        <button
-                          onClick={() => deleteVideo(video.id)}
-                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors"
-                          title="Eliminar video"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
               
               {category.videos && category.videos.length > 0 ? (
