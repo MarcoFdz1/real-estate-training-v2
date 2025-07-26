@@ -6,7 +6,7 @@ import time
 import sys
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "https://0810bf09-7686-48eb-b122-c4ed4db0c0f2.preview.emergentagent.com"
+BACKEND_URL = "https://814fd4b1-15b6-4a3a-bbf6-7f00f94eded3.preview.emergentagent.com"
 API_URL = f"{BACKEND_URL}/api"
 
 # Test results tracking
