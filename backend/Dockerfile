@@ -1,17 +1,17 @@
-# Dockerfile para Backend (FastAPI) - Versión optimizada
+# Dockerfile para Backend (FastAPI) - Versión corregida
 FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
 # Copy requirements first (for better caching)
-COPY backend/requirements.txt .
+COPY requirements.txt .
 
 # Install Python dependencies (sin gcc para evitar problemas)
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend source code
-COPY backend/ .
+COPY . .
 
 # Expose port
 EXPOSE 8001
