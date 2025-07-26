@@ -151,7 +151,7 @@ function App() {
     const value = input?.value.trim();
     
     if (value !== undefined && value !== null) {
-      saveSettings(fieldName, value);
+      saveSettings(fieldName, value); // Allow empty strings
     } else {
       showWarningToast('Entrada inválida', validationMsg);
     }
