@@ -651,11 +651,11 @@ function App() {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              className={`fixed right-0 top-0 h-full w-96 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-2xl z-50 overflow-y-auto`}
+              className={`fixed right-0 top-0 h-full w-full sm:w-96 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-2xl z-50 overflow-y-auto`}
             >
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-[#C5A95E]">Panel de Administración</h2>
+              <div className="p-4 sm:p-6">
+                <div className="flex justify-between items-center mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-2xl font-bold text-[#C5A95E]">Panel de Administración</h2>
                   <button
                     onClick={() => setShowAdminPanel(false)}
                     className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
