@@ -136,6 +136,36 @@ const VideoCard = ({
           </div>
         )}
         
+        {/* Admin Edit/Delete Buttons */}
+        {userRole === 'admin' && (
+          <div className="absolute top-3 right-3 flex space-x-1">
+            {!isCompleted && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit && onEdit(video);
+                  }}
+                  className="p-2 rounded-full bg-blue-500/90 text-white hover:bg-blue-600/90 transition-colors"
+                  title="Editar video"
+                >
+                  <Edit3 size={16} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete && onDelete(video.id);
+                  }}
+                  className="p-2 rounded-full bg-red-500/90 text-white hover:bg-red-600/90 transition-colors"
+                  title="Eliminar video"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </>
+            )}
+          </div>
+        )}
+        
         {/* Duration Badge */}
         <div className="absolute top-3 left-3 px-2 py-1 rounded-lg bg-black/70 text-white text-sm font-medium">
           <div className="flex items-center space-x-1">
