@@ -135,6 +135,19 @@ class VideoCreate(BaseModel):
     releaseDate: Optional[str] = None  # Will be auto-generated if not provided
     categoryId: str
 
+class VideoUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    thumbnail: Optional[str] = None
+    duration: Optional[str] = None
+    youtubeId: Optional[str] = None
+    match: Optional[str] = None
+    difficulty: Optional[str] = None
+    rating: Optional[float] = None
+    views: Optional[int] = None
+    releaseDate: Optional[str] = None
+    categoryId: Optional[str] = None
+
 class Category(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
