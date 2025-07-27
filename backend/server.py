@@ -716,12 +716,25 @@ async def create_video(video_create: VideoCreate):
     return video_obj
 
 @api_router.put("/videos/{video_id}")
-async def update_video(video_id: str, video_update: VideoCreate):
+async def update_video(video_id: str, video_update: VideoUpdate):
+    # Check if video exists
+    existing_video = await db.videos.find_one({"id": video_id})
+    if not existing_video:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    # Create update data with only non-None values
+    update_data = {k: v for k, v in video_update.dict().items() if v is not None}
+    
+    # If no fields to update, return success
+    if not update_data:
+        return {"message": "No hay campos para actualizar"}
+    
     # Update video in videos collection
     result = await db.videos.update_one(
         {"id": video_id}, 
-        {"$set": video_update.dict()}
+        {"$set": update_data}
     )
+    
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Video no encontrado")
     
