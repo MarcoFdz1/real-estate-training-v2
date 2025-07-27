@@ -441,26 +441,6 @@ async def get_video_detailed(video_id: str):
     return VideoWithStats(**video, stats=stats)
 
 # Enhanced Video Management Endpoints
-@api_router.put("/videos/{video_id}")
-async def update_video(video_id: str, video_data: VideoCreate):
-    # Check if video exists
-    existing_video = await db.videos.find_one({"id": video_id})
-    if not existing_video:
-        raise HTTPException(status_code=404, detail="Video no encontrado")
-    
-    # Update video data
-    update_data = video_data.dict()
-    update_data["id"] = video_id  # Keep the same ID
-    
-    result = await db.videos.update_one(
-        {"id": video_id},
-        {"$set": update_data}
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Video no encontrado")
-    
-    return {"message": "Video actualizado exitosamente"}
 
 @api_router.delete("/videos/{video_id}")
 async def delete_video(video_id: str):
