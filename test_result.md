@@ -354,15 +354,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Landing Page Text Editing"
-    - "Optional Field Validation Fix"
-    - "Video Editing for Published Videos"
     - "Complete Responsive Design and Mobile Optimization"
-  stuck_tasks:
-    - "Landing Page Text Editing"
-    - "Optional Field Validation Fix"
+  stuck_tasks: []
   test_all: false
-  test_priority: "stuck_first"
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
