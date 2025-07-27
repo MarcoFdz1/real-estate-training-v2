@@ -1150,8 +1150,8 @@ function App() {
             <div key={category.id} className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <h2 className="text-2xl font-semibold text-[#C5A95E]">{category.name}</h2>
-                  <span className="text-sm text-gray-500">
+                  <h2 className="text-lg sm:text-2xl font-semibold text-[#C5A95E]">{category.name}</h2>
+                  <span className="text-xs sm:text-sm text-gray-500">
                     ({category.videos?.length || 0} videos)
                   </span>
                 </div>
