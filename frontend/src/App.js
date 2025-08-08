@@ -151,7 +151,7 @@ function App() {
     const value = input?.value.trim();
     
     if (value !== undefined && value !== null) {
-      saveSettings(fieldName, value);
+      saveSettings(fieldName, value); // Allow empty strings
     } else {
       showWarningToast('Entrada inválida', validationMsg);
     }
@@ -374,22 +374,22 @@ function App() {
     }
 
     try {
+      const videoData = {
+        title,
+        youtubeId,
+        categoryId: categoryId.toString()
+      };
+
+      // Only add optional fields if they have values
+      if (description) videoData.description = description;
+      if (thumbnail) videoData.thumbnail = thumbnail;
+      if (duration) videoData.duration = duration;
+      if (difficulty && difficulty !== 'Intermedio') videoData.difficulty = difficulty;
+
       const response = await fetch(`${API_URL}/videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          description: description || '',
-          thumbnail: thumbnail || `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
-          duration: duration || '45 min',
-          youtubeId,
-          match: '95%',
-          difficulty: difficulty || 'Intermedio',
-          rating: 4.5,
-          views: 0,
-          releaseDate: new Date().toISOString().split('T')[0],
-          categoryId: categoryId.toString()
-        })
+        body: JSON.stringify(videoData)
       });
 
       if (response.ok) {
@@ -576,47 +576,47 @@ function App() {
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} style={{ backgroundColor: theme === 'dark' ? '#000000' : '#f3f4f6' }}>
       <ToastContainer />
-      <header className={`${theme === 'dark' ? 'bg-black' : 'bg-white'} p-4 flex justify-between items-center shadow-lg`}>
-        <div className="flex items-center space-x-3">
+      <header className={`${theme === 'dark' ? 'bg-black' : 'bg-white'} p-2 sm:p-4 flex justify-between items-center shadow-lg`}>
+        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
           {customization.logoUrl && (
             <img 
               src={customization.logoUrl} 
               alt="Logo"
-              className="h-8 object-contain"
+              className="h-6 sm:h-8 object-contain flex-shrink-0"
               onError={(e) => e.target.style.display = 'none'}
             />
           )}
-          <h1 className="text-xl font-bold text-[#C5A95E]">{customization.companyName}</h1>
+          <h1 className="text-sm sm:text-xl font-bold text-[#C5A95E] truncate">{customization.companyName}</h1>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-1 sm:space-x-4 flex-shrink-0">
           <button
             onClick={() => setCurrentView('videos')}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
               currentView === 'videos' 
                 ? 'bg-[#C5A95E] text-white' 
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
-            <Home size={20} />
+            <Home size={16} className="sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={() => setCurrentView('dashboard')}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
               currentView === 'dashboard' 
                 ? 'bg-[#C5A95E] text-white' 
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
-            <BarChart3 size={20} />
+            <BarChart3 size={16} className="sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full bg-[#C5A95E] text-white hover:bg-[#B8975A] transition-colors"
+            className="p-1.5 sm:p-2 rounded-full bg-[#C5A95E] text-white hover:bg-[#B8975A] transition-colors"
           >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === 'dark' ? <Sun size={16} className="sm:w-5 sm:h-5" /> : <Moon size={16} className="sm:w-5 sm:h-5" />}
           </button>
 
           {userRole === 'admin' && (
@@ -651,11 +651,11 @@ function App() {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              className={`fixed right-0 top-0 h-full w-96 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-2xl z-50 overflow-y-auto`}
+              className={`fixed right-0 top-0 h-full w-full sm:w-96 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-2xl z-50 overflow-y-auto`}
             >
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-[#C5A95E]">Panel de Administración</h2>
+              <div className="p-4 sm:p-6">
+                <div className="flex justify-between items-center mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-2xl font-bold text-[#C5A95E]">Panel de Administración</h2>
                   <button
                     onClick={() => setShowAdminPanel(false)}
                     className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
@@ -1138,57 +1138,38 @@ function App() {
         )}
       </AnimatePresence>
 
-      <main className="p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">{customization.heroTitle}</h1>
-          <p className="text-gray-500">{customization.heroSubtitle}</p>
+      <main className="p-3 sm:p-6">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-3xl font-bold mb-2">{customization.heroTitle}</h1>
+          <p className="text-sm sm:text-base text-gray-500">{customization.heroSubtitle}</p>
         </div>
         
         {/* Categories Grid with Videos */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {categories.map((category) => (
-            <div key={category.id} className="space-y-4">
+            <div key={category.id} className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <h2 className="text-2xl font-semibold text-[#C5A95E]">{category.name}</h2>
-                  <span className="text-sm text-gray-500">
+                  <h2 className="text-lg sm:text-2xl font-semibold text-[#C5A95E]">{category.name}</h2>
+                  <span className="text-xs sm:text-sm text-gray-500">
                     ({category.videos?.length || 0} videos)
                   </span>
                 </div>
-                {userRole === 'admin' && category.videos && category.videos.length > 0 && (
-                  <div className="flex space-x-2">
-                    {category.videos.map((video) => (
-                      <div key={video.id} className="flex space-x-1">
-                        <button
-                          onClick={() => editVideo(video)}
-                          className="p-1 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900 rounded transition-colors"
-                          title="Editar video"
-                        >
-                          <Edit3 size={14} />
-                        </button>
-                        <button
-                          onClick={() => deleteVideo(video.id)}
-                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors"
-                          title="Eliminar video"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
               
               {category.videos && category.videos.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                   {category.videos.map((video) => (
                     <VideoCard
                       key={video.id}
                       video={video}
                       userEmail={userEmail}
                       onClick={handleVideoClick}
+                      onEdit={editVideo}
+                      onDelete={deleteVideo}
                       theme={theme}
                       showStats={userRole === 'admin'}
+                      userRole={userRole}
                     />
                   ))}
                 </div>

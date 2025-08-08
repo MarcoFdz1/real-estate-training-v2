@@ -124,26 +124,41 @@ class Video(BaseModel):
 
 class VideoCreate(BaseModel):
     title: str
-    description: str
-    thumbnail: str
-    duration: str
+    description: Optional[str] = ""
+    thumbnail: Optional[str] = None  # Will be auto-generated from youtubeId if not provided
+    duration: Optional[str] = "45 min"
     youtubeId: str
-    match: str
-    difficulty: str
-    rating: float
-    views: int
-    releaseDate: str
+    match: Optional[str] = "95%"
+    difficulty: Optional[str] = "Intermedio"
+    rating: Optional[float] = 4.5
+    views: Optional[int] = 0
+    releaseDate: Optional[str] = None  # Will be auto-generated if not provided
     categoryId: str
+
+class VideoUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    thumbnail: Optional[str] = None
+    duration: Optional[str] = None
+    youtubeId: Optional[str] = None
+    match: Optional[str] = None
+    difficulty: Optional[str] = None
+    rating: Optional[float] = None
+    views: Optional[int] = None
+    releaseDate: Optional[str] = None
+    categoryId: Optional[str] = None
 
 class Category(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
+    description: Optional[str] = ""
     icon: str
     videos: List[Video] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class CategoryCreate(BaseModel):
     name: str
+    description: Optional[str] = ""
     icon: str
 
 class Settings(BaseModel):
@@ -426,26 +441,6 @@ async def get_video_detailed(video_id: str):
     return VideoWithStats(**video, stats=stats)
 
 # Enhanced Video Management Endpoints
-@api_router.put("/videos/{video_id}")
-async def update_video(video_id: str, video_data: VideoCreate):
-    # Check if video exists
-    existing_video = await db.videos.find_one({"id": video_id})
-    if not existing_video:
-        raise HTTPException(status_code=404, detail="Video no encontrado")
-    
-    # Update video data
-    update_data = video_data.dict()
-    update_data["id"] = video_id  # Keep the same ID
-    
-    result = await db.videos.update_one(
-        {"id": video_id},
-        {"$set": update_data}
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Video no encontrado")
-    
-    return {"message": "Video actualizado exitosamente"}
 
 @api_router.delete("/videos/{video_id}")
 async def delete_video(video_id: str):
@@ -707,17 +702,39 @@ async def get_all_videos():
 @api_router.post("/videos", response_model=Video)
 async def create_video(video_create: VideoCreate):
     video_dict = video_create.dict()
+    
+    # Auto-generate thumbnail if not provided
+    if not video_dict.get('thumbnail'):
+        video_dict['thumbnail'] = f"https://img.youtube.com/vi/{video_dict['youtubeId']}/maxresdefault.jpg"
+    
+    # Auto-generate releaseDate if not provided
+    if not video_dict.get('releaseDate'):
+        video_dict['releaseDate'] = datetime.utcnow().strftime('%Y-%m-%d')
+    
     video_obj = Video(**video_dict)
     await db.videos.insert_one(video_obj.dict())
     return video_obj
 
 @api_router.put("/videos/{video_id}")
-async def update_video(video_id: str, video_update: VideoCreate):
+async def update_video(video_id: str, video_update: VideoUpdate):
+    # Check if video exists
+    existing_video = await db.videos.find_one({"id": video_id})
+    if not existing_video:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    # Create update data with only non-None values
+    update_data = {k: v for k, v in video_update.dict().items() if v is not None}
+    
+    # If no fields to update, return success
+    if not update_data:
+        return {"message": "No hay campos para actualizar"}
+    
     # Update video in videos collection
     result = await db.videos.update_one(
         {"id": video_id}, 
-        {"$set": video_update.dict()}
+        {"$set": update_data}
     )
+    
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Video no encontrado")
     

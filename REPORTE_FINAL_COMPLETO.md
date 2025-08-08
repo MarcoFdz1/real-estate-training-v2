@@ -6,7 +6,7 @@
 
 ## 📊 RESUMEN EJECUTIVO
 
-**URL DE PRODUCCIÓN:** `https://0810bf09-7686-48eb-b122-c4ed4db0c0f2.preview.emergentagent.com`
+**URL DE PRODUCCIÓN:** `https://814fd4b1-15b6-4a3a-bbf6-7f00f94eded3.preview.emergentagent.com`
 
 ### 🎯 RESULTADOS DE TESTING COMPLETO:
 - **Backend:** 78/78 tests pasando (97.62% éxito)
@@ -90,7 +90,7 @@
 ## 🎯 INSTRUCCIONES DE USO INMEDIATO
 
 ### **PARA ADMINISTRADORES:**
-1. **Accede:** `https://0810bf09-7686-48eb-b122-c4ed4db0c0f2.preview.emergentagent.com`
+1. **Accede:** `https://814fd4b1-15b6-4a3a-bbf6-7f00f94eded3.preview.emergentagent.com`
 2. **Login:** `unbrokerage@realtyonegroupmexico.mx` / `OneVision$07`
 3. **Personaliza:** Clic en ⚙️ para abrir panel admin
 4. **Configura:** Logo, fondo, textos de la empresa
@@ -156,7 +156,7 @@
 **¡TU APLICACIÓN ESTÁ COMPLETAMENTE LISTA PARA USO EN PRODUCCIÓN!**
 
 **Puedes empezar a usar inmediatamente:**
-1. **URL:** `https://0810bf09-7686-48eb-b122-c4ed4db0c0f2.preview.emergentagent.com`
+1. **URL:** `https://814fd4b1-15b6-4a3a-bbf6-7f00f94eded3.preview.emergentagent.com`
 2. **Admin:** `unbrokerage@realtyonegroupmexico.mx` / `OneVision$07`
 3. **Funcionalidad:** 100% operativa
 
