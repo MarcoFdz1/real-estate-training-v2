@@ -655,6 +655,8 @@ async def create_user(user_create: UserCreate):
         raise HTTPException(status_code=400, detail="El usuario ya existe")
     
     user_dict = user_create.dict()
+    # Store password as plain text for now for compatibility
+    # In production, you should hash the password
     user_obj = User(**user_dict)
     await db.users.insert_one(user_obj.dict())
     return user_obj
