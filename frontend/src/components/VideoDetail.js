@@ -151,10 +151,8 @@ const VideoDetail = ({
           <div className="lg:col-span-2 space-y-6">
             {/* Video Player or Thumbnail */}
             {showPlayer ? (
-              <VideoPlayer
-                youtubeId={video.youtubeId}
-                title={video.title}
-                duration={video.duration}
+              <UniversalVideoPlayer
+                video={video}
                 userEmail={userEmail}
                 videoId={video.id}
                 onProgressUpdate={handleProgressUpdate}
@@ -167,7 +165,13 @@ const VideoDetail = ({
                   alt={video.title}
                   className="w-full aspect-video object-cover rounded-xl"
                   onError={(e) => {
-                    e.target.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                    if (video.video_type === 'youtube') {
+                      e.target.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                    } else if (video.video_type === 'vimeo') {
+                      e.target.src = `https://i.vimeocdn.com/video/${video.vimeoId}_640.jpg`;
+                    } else {
+                      e.target.src = "https://via.placeholder.com/640x360/1a1a1a/ffffff?text=Video+No+Disponible";
+                    }
                   }}
                 />
                 <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -179,6 +183,11 @@ const VideoDetail = ({
                       <Play size={48} fill="white" />
                     </button>
                   </div>
+                </div>
+                
+                {/* Video Type Badge */}
+                <div className="absolute top-3 left-3 px-2 py-1 rounded-lg bg-black/70 text-white text-sm font-medium">
+                  {video.video_type ? video.video_type.toUpperCase() : 'YOUTUBE'}
                 </div>
                 
                 {/* Progress Bar */}
