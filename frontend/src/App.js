@@ -294,7 +294,7 @@ function App() {
 
     const title = document.getElementById('editVideoTitle').value.trim();
     const description = document.getElementById('editVideoDescription').value.trim();
-    const url = document.getElementById('editVideoUrl').value.trim();
+    const videoType = document.getElementById('editVideoType').value || editingVideo.video_type || 'youtube';
     const thumbnail = document.getElementById('editVideoThumbnail').value.trim();
     const duration = document.getElementById('editVideoDuration').value.trim();
     const difficulty = document.getElementById('editVideoDifficulty').value;
@@ -305,31 +305,56 @@ function App() {
       return;
     }
 
-    let youtubeId = editingVideo.youtubeId;
-    if (url && url !== `https://www.youtube.com/watch?v=${editingVideo.youtubeId}`) {
-      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-      if (match) {
-        youtubeId = match[1];
-      }
-    }
-
     try {
+      let updateData = {
+        title,
+        description: description || '',
+        thumbnail: thumbnail || editingVideo.thumbnail,
+        duration: duration || '45 min',
+        difficulty: difficulty || 'Intermedio',
+        categoryId: categoryId || editingVideo.categoryId,
+        video_type: videoType,
+        match: editingVideo.match || '95%',
+        rating: editingVideo.rating || 4.5,
+        views: editingVideo.views || 0,
+        releaseDate: editingVideo.releaseDate
+      };
+
+      // Handle different video types
+      if (videoType === 'youtube') {
+        const url = document.getElementById('editVideoUrl').value.trim();
+        if (url && url !== `https://www.youtube.com/watch?v=${editingVideo.youtubeId}`) {
+          const youtubeId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+          if (youtubeId) {
+            updateData.youtubeId = youtubeId;
+          }
+        } else {
+          updateData.youtubeId = editingVideo.youtubeId;
+        }
+        updateData.vimeoId = null;
+        updateData.mp4_url = null;
+        
+      } else if (videoType === 'vimeo') {
+        const url = document.getElementById('editVideoUrl').value.trim();
+        if (url) {
+          const vimeoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
+          if (vimeoId) {
+            updateData.vimeoId = vimeoId;
+          }
+        }
+        updateData.youtubeId = null;
+        updateData.mp4_url = null;
+        
+      } else if (videoType === 'mp4') {
+        updateData.mp4_url = editingVideo.mp4_url;
+        updateData.youtubeId = null;
+        updateData.vimeoId = null;
+      }
+
       const response = await fetch(`${API_URL}/videos/${editingVideo.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          description: description || '',
-          thumbnail: thumbnail || `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
-          duration: duration || '45 min',
-          youtubeId,
-          difficulty: difficulty || 'Intermedio',
-          categoryId: categoryId || editingVideo.categoryId,
-          match: editingVideo.match || '95%',
-          rating: editingVideo.rating || 4.5,
-          views: editingVideo.views || 0,
-          releaseDate: editingVideo.releaseDate
-        })
+        body: JSON.stringify(updateData)
       });
 
       if (response.ok) {
