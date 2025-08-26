@@ -282,6 +282,47 @@ class UserDashboard(BaseModel):
     progress_by_category: Dict[str, Dict[str, Any]] = {}
 
 
+# Helper functions for video processing
+def get_vimeo_thumbnail(vimeo_id: str) -> str:
+    """Generate Vimeo thumbnail URL from video ID"""
+    try:
+        import requests
+        response = requests.get(f"https://vimeo.com/api/v2/video/{vimeo_id}.json")
+        if response.status_code == 200:
+            data = response.json()
+            if data and len(data) > 0:
+                return data[0].get('thumbnail_large', f"https://i.vimeocdn.com/video/{vimeo_id}_640.jpg")
+    except:
+        pass
+    return f"https://i.vimeocdn.com/video/{vimeo_id}_640.jpg"
+
+def extract_vimeo_id(url: str) -> str:
+    """Extract Vimeo ID from various Vimeo URL formats"""
+    import re
+    patterns = [
+        r'vimeo\.com/(\d+)',
+        r'player\.vimeo\.com/video/(\d+)',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    return url  # Return as-is if no pattern matches
+
+def extract_youtube_id(url: str) -> str:
+    """Extract YouTube ID from various YouTube URL formats"""
+    import re
+    patterns = [
+        r'youtube\.com/watch\?v=([^&\n?#]+)',
+        r'youtu\.be/([^&\n?#]+)',
+        r'youtube\.com/embed/([^&\n?#]+)',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    return url  # Return as-is if no pattern matches
+
 # Helper function to hash password
 def hash_password(password: str) -> str:
     """Hash a password using SHA-256"""
