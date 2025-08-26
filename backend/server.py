@@ -114,7 +114,13 @@ class Video(BaseModel):
     description: str
     thumbnail: str
     duration: str
-    youtubeId: str
+    # Video source information
+    video_type: str  # 'youtube', 'vimeo', 'mp4'
+    youtubeId: Optional[str] = None
+    vimeoId: Optional[str] = None
+    mp4_url: Optional[str] = None
+    mp4_filename: Optional[str] = None
+    # Video metadata
     match: str
     difficulty: str
     rating: float
@@ -126,14 +132,20 @@ class Video(BaseModel):
 class VideoCreate(BaseModel):
     title: str
     description: Optional[str] = ""
-    thumbnail: Optional[str] = None  # Will be auto-generated from youtubeId if not provided
+    thumbnail: Optional[str] = None
     duration: Optional[str] = "45 min"
-    youtubeId: str
+    # Video source - only one should be provided
+    video_type: str  # 'youtube', 'vimeo', 'mp4'
+    youtubeId: Optional[str] = None
+    vimeoId: Optional[str] = None
+    mp4_url: Optional[str] = None
+    mp4_filename: Optional[str] = None
+    # Optional fields
     match: Optional[str] = "95%"
     difficulty: Optional[str] = "Intermedio"
     rating: Optional[float] = 4.5
     views: Optional[int] = 0
-    releaseDate: Optional[str] = None  # Will be auto-generated if not provided
+    releaseDate: Optional[str] = None
     categoryId: str
 
 class VideoUpdate(BaseModel):
@@ -141,7 +153,11 @@ class VideoUpdate(BaseModel):
     description: Optional[str] = None
     thumbnail: Optional[str] = None
     duration: Optional[str] = None
+    video_type: Optional[str] = None
     youtubeId: Optional[str] = None
+    vimeoId: Optional[str] = None
+    mp4_url: Optional[str] = None
+    mp4_filename: Optional[str] = None
     match: Optional[str] = None
     difficulty: Optional[str] = None
     rating: Optional[float] = None
