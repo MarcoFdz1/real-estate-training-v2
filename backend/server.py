@@ -169,6 +169,8 @@ class Settings(BaseModel):
     bannerUrl: str = ""
     loginTitle: str = "Iniciar Sesión"
     loginSubtitle: str = "Accede a tu plataforma de capacitación inmobiliaria"
+    heroTitle: str = "Plataforma de Capacitación Inmobiliaria"
+    heroSubtitle: str = "Explora nuestro contenido educativo especializado"
     theme: str = "dark"
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -179,6 +181,8 @@ class SettingsUpdate(BaseModel):
     bannerUrl: Optional[str] = None
     loginTitle: Optional[str] = None
     loginSubtitle: Optional[str] = None
+    heroTitle: Optional[str] = None
+    heroSubtitle: Optional[str] = None
     theme: Optional[str] = None
 
 class BannerVideo(BaseModel):
