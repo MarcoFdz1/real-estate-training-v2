@@ -1216,6 +1216,17 @@ function App() {
                             />
                           </div>
                           <div>
+                            <label className="block text-sm font-bold mb-2 text-yellow-600 dark:text-yellow-400">📺 Tipo de Video:</label>
+                            <select
+                              id="editVideoType"
+                              className="w-full p-3 rounded border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-yellow-500 focus:outline-none"
+                            >
+                              <option value="youtube">📺 YouTube</option>
+                              <option value="vimeo">🎬 Vimeo</option>
+                              <option value="mp4">📁 Archivo MP4</option>
+                            </select>
+                          </div>
+                          <div>
                             <label className="block text-sm font-bold mb-2 text-yellow-600 dark:text-yellow-400">🔗 URL de YouTube:</label>
                             <input
                               id="editVideoUrl"
