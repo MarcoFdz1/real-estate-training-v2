@@ -266,6 +266,16 @@ class UserDashboard(BaseModel):
     progress_by_category: Dict[str, Dict[str, Any]] = {}
 
 
+# Helper function to hash password
+def hash_password(password: str) -> str:
+    """Hash a password using SHA-256"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
+
+
 # Helper function to initialize default categories
 async def initialize_default_categories():
     default_categories = [
