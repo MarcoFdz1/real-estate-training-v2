@@ -834,6 +834,12 @@ async def upload_mp4_video(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al subir archivo: {str(e)}")
 
+# Video management endpoints
+@api_router.get("/videos", response_model=List[Video])
+async def get_all_videos():
+    videos = await db.videos.find().to_list(1000)
+    return [Video(**video) for video in videos]
+
 # Enhanced video creation endpoint
 @api_router.get("/videos", response_model=List[Video])
 async def get_all_videos():
