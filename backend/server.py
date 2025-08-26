@@ -840,13 +840,52 @@ async def get_all_videos():
     videos = await db.videos.find().to_list(1000)
     return [Video(**video) for video in videos]
 
+# Enhanced video creation endpoint
 @api_router.post("/videos", response_model=Video)
 async def create_video(video_create: VideoCreate):
     video_dict = video_create.dict()
     
-    # Auto-generate thumbnail if not provided
-    if not video_dict.get('thumbnail'):
-        video_dict['thumbnail'] = f"https://img.youtube.com/vi/{video_dict['youtubeId']}/maxresdefault.jpg"
+    # Process based on video type
+    if video_dict['video_type'] == 'youtube':
+        if not video_dict.get('youtubeId'):
+            raise HTTPException(status_code=400, detail="youtubeId es requerido para videos de YouTube")
+        
+        # Auto-generate thumbnail if not provided
+        if not video_dict.get('thumbnail'):
+            video_dict['thumbnail'] = f"https://img.youtube.com/vi/{video_dict['youtubeId']}/maxresdefault.jpg"
+        
+        # Clear other video type fields
+        video_dict['vimeoId'] = None
+        video_dict['mp4_url'] = None
+        video_dict['mp4_filename'] = None
+        
+    elif video_dict['video_type'] == 'vimeo':
+        if not video_dict.get('vimeoId'):
+            raise HTTPException(status_code=400, detail="vimeoId es requerido para videos de Vimeo")
+        
+        # Auto-generate thumbnail if not provided
+        if not video_dict.get('thumbnail'):
+            video_dict['thumbnail'] = get_vimeo_thumbnail(video_dict['vimeoId'])
+        
+        # Clear other video type fields
+        video_dict['youtubeId'] = None
+        video_dict['mp4_url'] = None
+        video_dict['mp4_filename'] = None
+        
+    elif video_dict['video_type'] == 'mp4':
+        if not video_dict.get('mp4_url'):
+            raise HTTPException(status_code=400, detail="mp4_url es requerido para videos MP4")
+        
+        # Use default thumbnail for MP4 if not provided
+        if not video_dict.get('thumbnail'):
+            video_dict['thumbnail'] = "https://via.placeholder.com/640x360/1a1a1a/ffffff?text=MP4+Video"
+        
+        # Clear other video type fields
+        video_dict['youtubeId'] = None
+        video_dict['vimeoId'] = None
+        
+    else:
+        raise HTTPException(status_code=400, detail="Tipo de video no válido. Usa: 'youtube', 'vimeo', o 'mp4'")
     
     # Auto-generate releaseDate if not provided
     if not video_dict.get('releaseDate'):
