@@ -490,6 +490,34 @@ function App() {
     toggleVideoInputs('youtube'); // Reset to default
   };
 
+  const toggleVideoInputs = (videoType) => {
+    const urlInput = document.getElementById('videoUrl');
+    const mp4FileInput = document.getElementById('mp4File');
+    const urlContainer = document.getElementById('urlInputContainer');
+    const mp4Container = document.getElementById('mp4InputContainer');
+    
+    if (videoType === 'mp4') {
+      if (urlContainer) urlContainer.style.display = 'none';
+      if (mp4Container) mp4Container.style.display = 'block';
+      if (urlInput) urlInput.required = false;
+      if (mp4FileInput) mp4FileInput.required = true;
+    } else {
+      if (urlContainer) urlContainer.style.display = 'block';
+      if (mp4Container) mp4Container.style.display = 'none';
+      if (urlInput) urlInput.required = true;
+      if (mp4FileInput) mp4FileInput.required = false;
+      
+      // Update placeholder based on video type
+      if (urlInput) {
+        if (videoType === 'youtube') {
+          urlInput.placeholder = 'https://www.youtube.com/watch?v=...';
+        } else if (videoType === 'vimeo') {
+          urlInput.placeholder = 'https://vimeo.com/123456789';
+        }
+      }
+    }
+  };
+
   const handleVideoClick = (video) => {
     setSelectedVideo(video);
     setCurrentView('video-detail');
