@@ -128,10 +128,21 @@ function App() {
     try {
       const newSettings = { ...customization, [field]: value };
       
+      // Ensure all fields are sent to backend, including heroTitle and heroSubtitle
+      const settingsToSend = {
+        logoUrl: newSettings.logoUrl || '',
+        companyName: newSettings.companyName || 'Realty ONE Group Mexico',
+        loginBackgroundUrl: newSettings.loginBackgroundUrl || '',
+        loginTitle: newSettings.loginTitle || 'Iniciar Sesión',
+        loginSubtitle: newSettings.loginSubtitle || 'Accede a tu plataforma de capacitación inmobiliaria',
+        heroTitle: newSettings.heroTitle || 'Plataforma de Capacitación Inmobiliaria',
+        heroSubtitle: newSettings.heroSubtitle || 'Explora nuestro contenido educativo especializado'
+      };
+      
       const response = await fetch(`${API_URL}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSettings)
+        body: JSON.stringify(settingsToSend)
       });
       
       if (response.ok) {
