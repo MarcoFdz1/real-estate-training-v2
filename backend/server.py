@@ -306,9 +306,12 @@ async def login_user(user_login: UserLogin):
             return {"role": "user", "email": user_login.email, "name": "Usuario"}
     
     # Check custom users in database
-    user = await db.users.find_one({"email": user_login.email, "password": user_login.password})
+    user = await db.users.find_one({"email": user_login.email})
     if user:
-        return {"role": user["role"], "email": user["email"], "name": user["name"]}
+        # Check both hashed and plain passwords for backwards compatibility
+        if (user.get("password") == user_login.password or 
+            verify_password(user_login.password, user.get("password", ""))):
+            return {"role": user["role"], "email": user["email"], "name": user["name"]}
     
     raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
