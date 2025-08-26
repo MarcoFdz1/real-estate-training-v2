@@ -367,36 +367,94 @@ function App() {
   const uploadVideo = async () => {
     const title = document.getElementById('videoTitle').value.trim();
     const description = document.getElementById('videoDescription').value.trim();
-    const url = document.getElementById('videoUrl').value.trim();
+    const videoType = document.getElementById('videoType').value;
     const categoryId = document.getElementById('videoCategory').value;
     const duration = document.getElementById('videoDuration').value.trim();
     const thumbnail = document.getElementById('videoThumbnail').value.trim();
     const difficulty = document.getElementById('videoDifficulty').value;
 
-    if (!title || !url || !categoryId) {
-      showWarningToast('Campos incompletos', 'Complete título, URL y categoría');
-      return;
-    }
-
-    const youtubeId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
-    if (!youtubeId) {
-      showErrorToast('URL inválida', 'URL de YouTube inválida');
+    if (!title || !categoryId || !videoType) {
+      showWarningToast('Campos incompletos', 'Complete título, tipo de video y categoría');
       return;
     }
 
     try {
-      const videoData = {
+      let videoData = {
         title,
-        youtubeId,
-        categoryId: categoryId.toString()
+        categoryId: categoryId.toString(),
+        video_type: videoType
       };
 
-      // Only add optional fields if they have values
+      // Add optional common fields
       if (description) videoData.description = description;
       if (thumbnail) videoData.thumbnail = thumbnail;
       if (duration) videoData.duration = duration;
       if (difficulty && difficulty !== 'Intermedio') videoData.difficulty = difficulty;
 
+      // Handle different video types
+      if (videoType === 'youtube') {
+        const url = document.getElementById('videoUrl').value.trim();
+        if (!url) {
+          showWarningToast('Campo requerido', 'URL de YouTube es requerida');
+          return;
+        }
+        
+        const youtubeId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+        if (!youtubeId) {
+          showErrorToast('URL inválida', 'URL de YouTube inválida');
+          return;
+        }
+        videoData.youtubeId = youtubeId;
+        
+      } else if (videoType === 'vimeo') {
+        const url = document.getElementById('videoUrl').value.trim();
+        if (!url) {
+          showWarningToast('Campo requerido', 'URL de Vimeo es requerida');
+          return;
+        }
+        
+        const vimeoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
+        if (!vimeoId) {
+          showErrorToast('URL inválida', 'URL de Vimeo inválida');
+          return;
+        }
+        videoData.vimeoId = vimeoId;
+        
+      } else if (videoType === 'mp4') {
+        const fileInput = document.getElementById('mp4File');
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+          showWarningToast('Campo requerido', 'Seleccione un archivo MP4');
+          return;
+        }
+        
+        const file = fileInput.files[0];
+        
+        // Use FormData for file upload
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('title', title);
+        formData.append('description', description || '');
+        formData.append('categoryId', categoryId);
+        formData.append('duration', duration || '45 min');
+        formData.append('difficulty', difficulty || 'Intermedio');
+        
+        const response = await fetch(`${API_URL}/upload-mp4`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          showSuccessToast('Video MP4 subido', 'Video MP4 subido exitosamente');
+          clearVideoForm();
+          loadInitialData();
+        } else {
+          const error = await response.json();
+          showErrorToast('Error al subir MP4', error.detail || 'Error al subir archivo MP4');
+        }
+        return;
+      }
+
+      // For YouTube and Vimeo, use JSON API
       const response = await fetch(`${API_URL}/videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -404,14 +462,8 @@ function App() {
       });
 
       if (response.ok) {
-        document.getElementById('videoTitle').value = '';
-        document.getElementById('videoDescription').value = '';
-        document.getElementById('videoUrl').value = '';
-        document.getElementById('videoCategory').value = '';
-        document.getElementById('videoDuration').value = '';
-        document.getElementById('videoThumbnail').value = '';
-        document.getElementById('videoDifficulty').value = 'Intermedio';
         showSuccessToast('Video subido', 'Video subido exitosamente');
+        clearVideoForm();
         loadInitialData();
       } else {
         const error = await response.json();
@@ -420,6 +472,22 @@ function App() {
     } catch (error) {
       showErrorToast('Error de conexión', 'No se pudo conectar con el servidor');
     }
+  };
+
+  const clearVideoForm = () => {
+    document.getElementById('videoTitle').value = '';
+    document.getElementById('videoDescription').value = '';
+    document.getElementById('videoUrl').value = '';
+    document.getElementById('videoCategory').value = '';
+    document.getElementById('videoDuration').value = '';
+    document.getElementById('videoThumbnail').value = '';
+    document.getElementById('videoDifficulty').value = 'Intermedio';
+    document.getElementById('videoType').value = 'youtube';
+    
+    const mp4FileInput = document.getElementById('mp4File');
+    if (mp4FileInput) mp4FileInput.value = '';
+    
+    toggleVideoInputs('youtube'); // Reset to default
   };
 
   const handleVideoClick = (video) => {
