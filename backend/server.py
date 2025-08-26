@@ -841,12 +841,6 @@ async def get_all_videos():
     return [Video(**video) for video in videos]
 
 # Enhanced video creation endpoint
-@api_router.get("/videos", response_model=List[Video])
-async def get_all_videos():
-    videos = await db.videos.find().to_list(1000)
-    return [Video(**video) for video in videos]
-
-# Enhanced video creation endpoint
 @api_router.post("/videos", response_model=Video)
 async def create_video(video_create: VideoCreate):
     video_dict = video_create.dict()
