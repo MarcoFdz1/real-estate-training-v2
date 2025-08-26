@@ -281,7 +281,22 @@ function App() {
     setTimeout(() => {
       document.getElementById('editVideoTitle').value = video.title || '';
       document.getElementById('editVideoDescription').value = video.description || '';
-      document.getElementById('editVideoUrl').value = `https://www.youtube.com/watch?v=${video.youtubeId}` || '';
+      
+      // Set video type (with backwards compatibility)
+      const videoType = video.video_type || (video.youtubeId ? 'youtube' : 'youtube');
+      document.getElementById('editVideoType').value = videoType;
+      
+      // Set URL based on video type
+      if (videoType === 'youtube' && video.youtubeId) {
+        document.getElementById('editVideoUrl').value = `https://www.youtube.com/watch?v=${video.youtubeId}`;
+      } else if (videoType === 'vimeo' && video.vimeoId) {
+        document.getElementById('editVideoUrl').value = `https://vimeo.com/${video.vimeoId}`;
+      } else if (videoType === 'mp4') {
+        document.getElementById('editVideoUrl').value = 'Archivo MP4 cargado';
+      } else {
+        document.getElementById('editVideoUrl').value = '';
+      }
+      
       document.getElementById('editVideoThumbnail').value = video.thumbnail || '';
       document.getElementById('editVideoDuration').value = video.duration || '';
       document.getElementById('editVideoDifficulty').value = video.difficulty || 'Intermedio';
