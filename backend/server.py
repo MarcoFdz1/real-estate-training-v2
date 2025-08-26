@@ -771,7 +771,70 @@ async def delete_category(category_id: str):
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return {"message": "Categoría eliminada exitosamente"}
 
-# Video management endpoints
+# MP4 File Upload endpoint
+@api_router.post("/upload-mp4")
+async def upload_mp4_video(
+    file: UploadFile = File(...),
+    title: str = Form(...),
+    description: str = Form(""),
+    categoryId: str = Form(...),
+    duration: str = Form("45 min"),
+    difficulty: str = Form("Intermedio")
+):
+    """Upload MP4 video file and store in database"""
+    
+    # Validate file type
+    if not file.content_type.startswith('video/'):
+        raise HTTPException(status_code=400, detail="El archivo debe ser un video")
+    
+    if not file.filename.lower().endswith(('.mp4', '.mov', '.avi', '.mkv')):
+        raise HTTPException(status_code=400, detail="Formato de video no soportado")
+    
+    try:
+        # Read file content
+        file_content = await file.read()
+        
+        # Convert to base64 for storage (for small files) or save reference
+        if len(file_content) > 50 * 1024 * 1024:  # 50MB limit
+            raise HTTPException(status_code=400, detail="El archivo es demasiado grande (máximo 50MB)")
+        
+        # Create unique filename
+        file_extension = file.filename.split('.')[-1]
+        unique_filename = f"{str(uuid.uuid4())}.{file_extension}"
+        
+        # For this implementation, we'll store file as base64 in database
+        # In production, you'd want to use cloud storage (S3, etc.)
+        file_base64 = base64.b64encode(file_content).decode('utf-8')
+        mp4_url = f"data:video/{file_extension};base64,{file_base64}"
+        
+        # Create video object
+        video_data = {
+            "title": title,
+            "description": description,
+            "video_type": "mp4",
+            "mp4_url": mp4_url,
+            "mp4_filename": unique_filename,
+            "thumbnail": "https://via.placeholder.com/640x360/1a1a1a/ffffff?text=MP4+Video",
+            "duration": duration,
+            "difficulty": difficulty,
+            "categoryId": categoryId,
+            "match": "100%",
+            "rating": 4.5,
+            "views": 0,
+            "releaseDate": datetime.utcnow().strftime('%Y-%m-%d'),
+            "youtubeId": None,
+            "vimeoId": None
+        }
+        
+        video_obj = Video(**video_data)
+        await db.videos.insert_one(video_obj.dict())
+        
+        return {"message": "Video MP4 subido exitosamente", "video_id": video_obj.id}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al subir archivo: {str(e)}")
+
+# Enhanced video creation endpoint
 @api_router.get("/videos", response_model=List[Video])
 async def get_all_videos():
     videos = await db.videos.find().to_list(1000)
