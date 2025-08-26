@@ -16,6 +16,7 @@ import {
   Bookmark
 } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
+import UniversalVideoPlayer from './UniversalVideoPlayer';
 import VideoCard from './VideoCard';
 
 const VideoDetail = ({ 
