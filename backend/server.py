@@ -925,7 +925,77 @@ async def get_all_videos():
     
     return processed_videos
 
-# Enhanced video creation endpoint
+# Enhanced MP4 serving endpoint for chunked files
+@api_router.get("/videos/{video_id}/mp4-stream")
+async def stream_mp4_video(video_id: str):
+    """Stream MP4 video content, supporting both direct and chunked storage"""
+    
+    # Get video information
+    video = await db.videos.find_one({"id": video_id})
+    if not video:
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    if video.get("video_type") != "mp4":
+        raise HTTPException(status_code=400, detail="Este endpoint solo funciona para videos MP4")
+    
+    mp4_url = video.get("mp4_url")
+    if not mp4_url:
+        raise HTTPException(status_code=404, detail="Archivo MP4 no encontrado")
+    
+    try:
+        if mp4_url.startswith("chunked://"):
+            # Handle chunked file
+            file_ref_id = mp4_url.replace("chunked://", "")
+            
+            # Get all chunks for this file
+            chunks = await db.video_chunks.find({"file_ref_id": file_ref_id}).to_list(10000)
+            if not chunks:
+                raise HTTPException(status_code=404, detail="Chunks de archivo no encontrados")
+            
+            # Sort chunks by index
+            chunks.sort(key=lambda x: x["chunk_index"])
+            
+            # Reconstruct file from chunks
+            file_content = bytearray()
+            for chunk in chunks:
+                chunk_data = base64.b64decode(chunk["chunk_data"])
+                file_content.extend(chunk_data)
+            
+            # Return video content with appropriate headers
+            from fastapi.responses import Response
+            return Response(
+                content=bytes(file_content),
+                media_type="video/mp4",
+                headers={
+                    "Accept-Ranges": "bytes",
+                    "Content-Length": str(len(file_content)),
+                    "Cache-Control": "public, max-age=3600"
+                }
+            )
+            
+        elif mp4_url.startswith("data:video/"):
+            # Handle direct base64 storage
+            _, base64_data = mp4_url.split(",", 1)
+            file_content = base64.b64decode(base64_data)
+            
+            from fastapi.responses import Response
+            return Response(
+                content=file_content,
+                media_type="video/mp4",
+                headers={
+                    "Accept-Ranges": "bytes",
+                    "Content-Length": str(len(file_content)),
+                    "Cache-Control": "public, max-age=3600"
+                }
+            )
+        else:
+            raise HTTPException(status_code=400, detail="Formato de almacenamiento no soportado")
+            
+    except Exception as e:
+        logger.error(f"Error streaming video {video_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al reproducir video: {str(e)}")
+
+# Enhanced MP4 serving endpoint for chunked files
 @api_router.post("/videos", response_model=Video)
 async def create_video(video_create: VideoCreate):
     video_dict = video_create.dict()
