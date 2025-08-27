@@ -302,6 +302,9 @@ const VideoDetail = ({
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Network Stats Card */}
+            <NetworkStatsCard theme={theme} />
+
             {/* Statistics (for admin) */}
             {userRole === 'admin' && videoStats && (
               <div className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
