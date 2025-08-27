@@ -207,6 +207,16 @@ const AdaptiveVideoPlayer = ({
       // Set optimal preload based on connection
       videoElement.preload = streamingSettings.preload;
       
+      // Handle different MP4 storage methods
+      let videoSrc = video.mp4_url;
+      
+      if (video.mp4_url && video.mp4_url.startsWith('chunked://')) {
+        // For chunked files, use the streaming endpoint
+        videoSrc = `${process.env.REACT_APP_BACKEND_URL}/api/videos/${video.id}/mp4-stream`;
+      }
+      
+      videoElement.src = videoSrc;
+      
       videoElement.addEventListener('loadedmetadata', () => {
         setDuration(videoElement.duration);
       });
@@ -242,8 +252,17 @@ const AdaptiveVideoPlayer = ({
         setIsBuffering(false);
       });
 
+      videoElement.addEventListener('error', (e) => {
+        console.error('Video playback error:', e);
+        setIsBuffering(false);
+        // Try fallback URL if streaming fails
+        if (videoSrc.includes('/mp4-stream')) {
+          videoElement.src = video.mp4_url;
+        }
+      });
+
       if (streamingSettings.autoplay && !shouldUseLowBandwidthMode()) {
-        videoElement.play();
+        videoElement.play().catch(console.error);
       }
     }
   };
