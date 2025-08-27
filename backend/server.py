@@ -787,22 +787,37 @@ async def upload_mp4_video(
 ):
     """Upload MP4 video file with enhanced support for large files (up to 500MB)"""
     
-    # Validate file type
-    if not file.content_type.startswith('video/'):
-        raise HTTPException(status_code=400, detail="El archivo debe ser un video")
+    # Enhanced file validation - check both content-type and file extension
+    valid_content_types = [
+        'video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 
+        'video/x-ms-wmv', 'video/webm', 'video/x-flv', 'application/octet-stream'
+    ]
     
     # Support more video formats
     supported_formats = ('.mp4', '.mov', '.avi', '.mkv', '.webm', '.wmv', '.flv', '.m4v')
-    if not file.filename.lower().endswith(supported_formats):
+    
+    # Check file extension first (more reliable)
+    if not file.filename or not file.filename.lower().endswith(supported_formats):
         raise HTTPException(
             status_code=400, 
-            detail=f"Formato de video no soportado. Formatos permitidos: {', '.join(supported_formats)}"
+            detail=f"Formato de archivo no soportado. Formatos permitidos: {', '.join(supported_formats)}"
         )
+    
+    # More flexible content-type validation
+    if file.content_type and not (
+        file.content_type.startswith('video/') or 
+        file.content_type in valid_content_types
+    ):
+        logger.warning(f"Unusual content-type: {file.content_type} for file: {file.filename}")
+        # Don't reject, just log for monitoring
     
     try:
         # Read file content in chunks for large files
         file_content = bytearray()
         chunk_size = 8192  # 8KB chunks
+        
+        # Reset file pointer to beginning
+        await file.seek(0)
         
         while True:
             chunk = await file.read(chunk_size)
@@ -817,6 +832,13 @@ async def upload_mp4_video(
             raise HTTPException(
                 status_code=400, 
                 detail=f"El archivo es demasiado grande ({file_size_mb:.1f}MB). Máximo permitido: 500MB"
+            )
+        
+        # Validate minimum file size (at least 1KB)
+        if len(file_content) < 1024:
+            raise HTTPException(
+                status_code=400,
+                detail="El archivo parece estar vacío o dañado"
             )
         
         # Create unique filename
@@ -854,11 +876,13 @@ async def upload_mp4_video(
             
             # Store reference to chunked file
             mp4_url = f"chunked://{file_ref_id}"
+            storage_method = "chunked"
             
         else:
             # For smaller files, use direct base64 storage
             file_base64 = base64.b64encode(file_content).decode('utf-8')
             mp4_url = f"data:video/{file_extension};base64,{file_base64}"
+            storage_method = "direct"
         
         # Generate thumbnail based on file type
         if file_extension in ['mp4', 'webm', 'm4v']:
@@ -892,11 +916,14 @@ async def upload_mp4_video(
         video_obj = Video(**video_data)
         await db.videos.insert_one(video_obj.dict())
         
+        logger.info(f"MP4 video uploaded successfully: {title} ({file_size_mb:.2f}MB)")
+        
         return {
             "message": "Video MP4 subido exitosamente", 
             "video_id": video_obj.id,
             "file_size_mb": file_size_mb,
-            "storage_method": "chunked" if len(file_content) > 50 * 1024 * 1024 else "direct"
+            "storage_method": storage_method,
+            "file_format": file_extension
         }
         
     except HTTPException:
