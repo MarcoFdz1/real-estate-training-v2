@@ -116,7 +116,7 @@ class Video(BaseModel):
     thumbnail: str
     duration: str
     # Video source information
-    video_type: str  # 'youtube', 'vimeo', 'mp4'
+    video_type: str = 'youtube'  # 'youtube', 'vimeo', 'mp4'
     youtubeId: Optional[str] = None
     vimeoId: Optional[str] = None
     mp4_url: Optional[str] = None
