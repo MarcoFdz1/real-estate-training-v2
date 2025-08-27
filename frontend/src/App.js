@@ -1180,14 +1180,18 @@ function App() {
                         </div>
                         
                         <div id="mp4InputContainer" style={{display: 'none'}}>
-                          <label className="block text-sm font-bold mb-2 text-red-600 dark:text-red-400">📁 Archivo MP4 (máx. 50MB):</label>
+                          <label className="block text-sm font-bold mb-2 text-red-600 dark:text-red-400">📁 Archivo MP4 (máx. 500MB):</label>
                           <input
                             id="mp4File"
                             type="file"
-                            accept="video/mp4,video/mov,video/avi,video/mkv"
+                            accept="video/mp4,video/mov,video/avi,video/mkv,video/webm,video/wmv,video/flv,video/m4v"
                             className="w-full p-3 rounded border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-red-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
                           />
-                          <p className="text-xs text-gray-500 mt-2">Formatos soportados: MP4, MOV, AVI, MKV</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            <strong>Formatos soportados:</strong> MP4, MOV, AVI, MKV, WebM, WMV, FLV, M4V<br/>
+                            <strong>Límite:</strong> 500MB máximo<br/>
+                            <strong>Nota:</strong> Archivos grandes pueden tomar varios minutos en subir
+                          </p>
                         </div>
                         <div>
                           <label className="block text-sm font-bold mb-2 text-red-600 dark:text-red-400">🖼️ URL de Miniatura (Opcional):</label>
