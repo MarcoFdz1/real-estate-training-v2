@@ -771,7 +771,7 @@ async def delete_category(category_id: str):
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return {"message": "Categoría eliminada exitosamente"}
 
-# MP4 File Upload endpoint
+# MP4 File Upload endpoint with enhanced capabilities
 @api_router.post("/upload-mp4")
 async def upload_mp4_video(
     file: UploadFile = File(...),
@@ -781,40 +781,95 @@ async def upload_mp4_video(
     duration: str = Form("45 min"),
     difficulty: str = Form("Intermedio")
 ):
-    """Upload MP4 video file and store in database"""
+    """Upload MP4 video file with enhanced support for large files (up to 500MB)"""
     
     # Validate file type
     if not file.content_type.startswith('video/'):
         raise HTTPException(status_code=400, detail="El archivo debe ser un video")
     
-    if not file.filename.lower().endswith(('.mp4', '.mov', '.avi', '.mkv')):
-        raise HTTPException(status_code=400, detail="Formato de video no soportado")
+    # Support more video formats
+    supported_formats = ('.mp4', '.mov', '.avi', '.mkv', '.webm', '.wmv', '.flv', '.m4v')
+    if not file.filename.lower().endswith(supported_formats):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Formato de video no soportado. Formatos permitidos: {', '.join(supported_formats)}"
+        )
     
     try:
-        # Read file content
-        file_content = await file.read()
+        # Read file content in chunks for large files
+        file_content = bytearray()
+        chunk_size = 8192  # 8KB chunks
         
-        # Convert to base64 for storage (for small files) or save reference
-        if len(file_content) > 50 * 1024 * 1024:  # 50MB limit
-            raise HTTPException(status_code=400, detail="El archivo es demasiado grande (máximo 50MB)")
+        while True:
+            chunk = await file.read(chunk_size)
+            if not chunk:
+                break
+            file_content.extend(chunk)
+        
+        file_size_mb = len(file_content) / (1024 * 1024)
+        
+        # Increased limit to 500MB
+        if len(file_content) > 500 * 1024 * 1024:  # 500MB limit
+            raise HTTPException(
+                status_code=400, 
+                detail=f"El archivo es demasiado grande ({file_size_mb:.1f}MB). Máximo permitido: 500MB"
+            )
         
         # Create unique filename
-        file_extension = file.filename.split('.')[-1]
+        file_extension = file.filename.split('.')[-1].lower()
         unique_filename = f"{str(uuid.uuid4())}.{file_extension}"
         
-        # For this implementation, we'll store file as base64 in database
-        # In production, you'd want to use cloud storage (S3, etc.)
-        file_base64 = base64.b64encode(file_content).decode('utf-8')
-        mp4_url = f"data:video/{file_extension};base64,{file_base64}"
+        # For files larger than 50MB, we'll use a more efficient storage method
+        if len(file_content) > 50 * 1024 * 1024:  # 50MB
+            # For large files, store as chunked base64 to avoid memory issues
+            import math
+            
+            chunk_size_b64 = 1024 * 1024  # 1MB chunks for base64
+            total_chunks = math.ceil(len(file_content) / chunk_size_b64)
+            
+            # Create a reference ID for the chunked file
+            file_ref_id = str(uuid.uuid4())
+            
+            # Store chunks in separate collection (for production, use cloud storage)
+            for i in range(total_chunks):
+                start_idx = i * chunk_size_b64
+                end_idx = min((i + 1) * chunk_size_b64, len(file_content))
+                chunk_data = file_content[start_idx:end_idx]
+                chunk_base64 = base64.b64encode(chunk_data).decode('utf-8')
+                
+                chunk_doc = {
+                    "file_ref_id": file_ref_id,
+                    "chunk_index": i,
+                    "chunk_data": chunk_base64,
+                    "total_chunks": total_chunks,
+                    "created_at": datetime.utcnow()
+                }
+                
+                # Store chunk in a separate collection
+                await db.video_chunks.insert_one(chunk_doc)
+            
+            # Store reference to chunked file
+            mp4_url = f"chunked://{file_ref_id}"
+            
+        else:
+            # For smaller files, use direct base64 storage
+            file_base64 = base64.b64encode(file_content).decode('utf-8')
+            mp4_url = f"data:video/{file_extension};base64,{file_base64}"
         
-        # Create video object
+        # Generate thumbnail based on file type
+        if file_extension in ['mp4', 'webm', 'm4v']:
+            thumbnail_url = "https://via.placeholder.com/640x360/1a1a1a/C5A95E?text=🎬+MP4+Video"
+        else:
+            thumbnail_url = f"https://via.placeholder.com/640x360/1a1a1a/C5A95E?text=🎥+{file_extension.upper()}+Video"
+        
+        # Create video object with enhanced metadata
         video_data = {
             "title": title,
             "description": description,
             "video_type": "mp4",
             "mp4_url": mp4_url,
             "mp4_filename": unique_filename,
-            "thumbnail": "https://via.placeholder.com/640x360/1a1a1a/ffffff?text=MP4+Video",
+            "thumbnail": thumbnail_url,
             "duration": duration,
             "difficulty": difficulty,
             "categoryId": categoryId,
@@ -823,15 +878,27 @@ async def upload_mp4_video(
             "views": 0,
             "releaseDate": datetime.utcnow().strftime('%Y-%m-%d'),
             "youtubeId": None,
-            "vimeoId": None
+            "vimeoId": None,
+            # Add file metadata
+            "file_size_mb": round(file_size_mb, 2),
+            "file_format": file_extension,
+            "upload_date": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         }
         
         video_obj = Video(**video_data)
         await db.videos.insert_one(video_obj.dict())
         
-        return {"message": "Video MP4 subido exitosamente", "video_id": video_obj.id}
+        return {
+            "message": "Video MP4 subido exitosamente", 
+            "video_id": video_obj.id,
+            "file_size_mb": file_size_mb,
+            "storage_method": "chunked" if len(file_content) > 50 * 1024 * 1024 else "direct"
+        }
         
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Error uploading MP4 file: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error al subir archivo: {str(e)}")
 
 @api_router.get("/videos", response_model=List[Video])
