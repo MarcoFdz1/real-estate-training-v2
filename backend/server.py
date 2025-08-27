@@ -128,6 +128,10 @@ class Video(BaseModel):
     views: int
     releaseDate: str
     categoryId: str
+    # Enhanced MP4 metadata
+    file_size_mb: Optional[float] = None
+    file_format: Optional[str] = None
+    upload_date: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class VideoCreate(BaseModel):
