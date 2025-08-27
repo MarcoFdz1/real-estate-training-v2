@@ -478,8 +478,20 @@ function App() {
         }
         
         const file = fileInput.files[0];
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
         
-        // Use FormData for file upload
+        // Check file size limit (500MB)
+        if (file.size > 500 * 1024 * 1024) {
+          showErrorToast('Archivo muy grande', `El archivo es de ${fileSizeMB}MB. Máximo permitido: 500MB`);
+          return;
+        }
+        
+        // Show progress indicator for large files
+        if (file.size > 10 * 1024 * 1024) { // Show progress for files > 10MB
+          showInfoToast('Subiendo archivo', `Subiendo archivo de ${fileSizeMB}MB... Esto puede tomar unos minutos.`);
+        }
+        
+        // Use FormData for file upload with enhanced timeout
         const formData = new FormData();
         formData.append('file', file);
         formData.append('title', title);
@@ -488,18 +500,37 @@ function App() {
         formData.append('duration', duration || '45 min');
         formData.append('difficulty', difficulty || 'Intermedio');
         
-        const response = await fetch(`${API_URL}/upload-mp4`, {
-          method: 'POST',
-          body: formData
-        });
+        // Create AbortController for timeout handling
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+        
+        try {
+          const response = await fetch(`${API_URL}/upload-mp4`, {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal
+          });
 
-        if (response.ok) {
-          showSuccessToast('Video MP4 subido', 'Video MP4 subido exitosamente');
-          clearVideoForm();
-          loadInitialData();
-        } else {
-          const error = await response.json();
-          showErrorToast('Error al subir MP4', error.detail || 'Error al subir archivo MP4');
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const result = await response.json();
+            showSuccessToast(
+              'Video MP4 subido', 
+              `Video subido exitosamente (${fileSizeMB}MB) - Método: ${result.storage_method || 'directo'}`
+            );
+            clearVideoForm();
+            loadInitialData();
+          } else {
+            const error = await response.json();
+            showErrorToast('Error al subir MP4', error.detail || 'Error al subir archivo MP4');
+          }
+        } catch (uploadError) {
+          if (uploadError.name === 'AbortError') {
+            showErrorToast('Timeout', 'El archivo es muy grande y la subida se agotó. Intente con un archivo más pequeño.');
+          } else {
+            showErrorToast('Error de red', 'Error de conexión durante la subida');
+          }
         }
         return;
       }
