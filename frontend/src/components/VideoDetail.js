@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
 import UniversalVideoPlayer from './UniversalVideoPlayer';
+import AdaptiveVideoPlayer from './AdaptiveVideoPlayer';
 import VideoCard from './VideoCard';
 
 const VideoDetail = ({ 
