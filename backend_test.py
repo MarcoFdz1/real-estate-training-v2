@@ -6,7 +6,7 @@ import time
 import sys
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "http://localhost:8001"
+BACKEND_URL = "https://real-estate-v2.preview.emergentagent.com"
 API_URL = f"{BACKEND_URL}/api"
 
 # Test results tracking
