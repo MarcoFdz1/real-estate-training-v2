@@ -1288,6 +1288,7 @@ function App() {
                           </select>
                         </div>
                         <button
+                          id="uploadButton"
                           onClick={uploadVideo}
                           className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 flex items-center justify-center font-bold shadow-lg"
                         >
