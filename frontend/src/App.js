@@ -428,6 +428,13 @@ function App() {
       return;
     }
 
+    // Show loading indicator
+    const uploadButton = document.getElementById('uploadButton');
+    if (uploadButton) {
+      uploadButton.disabled = true;
+      uploadButton.textContent = 'Subiendo...';
+    }
+
     try {
       let videoData = {
         title,
@@ -441,7 +448,7 @@ function App() {
       if (duration) videoData.duration = duration;
       if (difficulty && difficulty !== 'Intermedio') videoData.difficulty = difficulty;
 
-      // Handle different video types
+      // Handle different video types with enhanced validation
       if (videoType === 'youtube') {
         const url = document.getElementById('videoUrl').value.trim();
         if (!url) {
@@ -451,10 +458,11 @@ function App() {
         
         const youtubeId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
         if (!youtubeId) {
-          showErrorToast('URL inválida', 'URL de YouTube inválida');
+          showErrorToast('URL inválida', 'URL de YouTube inválida. Ej: https://www.youtube.com/watch?v=dQw4w9WgXcQ');
           return;
         }
         videoData.youtubeId = youtubeId;
+        showInfoToast('Procesando', 'Creando video de YouTube...');
         
       } else if (videoType === 'vimeo') {
         const url = document.getElementById('videoUrl').value.trim();
@@ -465,15 +473,16 @@ function App() {
         
         const vimeoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
         if (!vimeoId) {
-          showErrorToast('URL inválida', 'URL de Vimeo inválida');
+          showErrorToast('URL inválida', 'URL de Vimeo inválida. Ej: https://vimeo.com/123456789');
           return;
         }
         videoData.vimeoId = vimeoId;
+        showInfoToast('Procesando', 'Creando video de Vimeo...');
         
       } else if (videoType === 'mp4') {
         const fileInput = document.getElementById('mp4File');
         if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-          showWarningToast('Campo requerido', 'Seleccione un archivo MP4');
+          showWarningToast('Campo requerido', 'Seleccione un archivo de video');
           return;
         }
         
@@ -486,9 +495,19 @@ function App() {
           return;
         }
         
+        // Enhanced file validation
+        const validExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'wmv', 'flv', 'm4v'];
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        if (!validExtensions.includes(fileExtension)) {
+          showErrorToast('Formato no válido', `Formato .${fileExtension} no soportado. Use: ${validExtensions.join(', ')}`);
+          return;
+        }
+        
         // Show progress indicator for large files
         if (file.size > 10 * 1024 * 1024) { // Show progress for files > 10MB
-          showInfoToast('Subiendo archivo', `Subiendo archivo de ${fileSizeMB}MB... Esto puede tomar unos minutos.`);
+          showInfoToast('Subiendo archivo', `Subiendo ${fileSizeMB}MB... Esto puede tomar varios minutos.`);
+        } else {
+          showInfoToast('Subiendo archivo', `Procesando video de ${fileSizeMB}MB...`);
         }
         
         // Use FormData for file upload with enhanced timeout
@@ -516,23 +535,31 @@ function App() {
           if (response.ok) {
             const result = await response.json();
             showSuccessToast(
-              'Video MP4 subido', 
-              `Video subido exitosamente (${fileSizeMB}MB) - Método: ${result.storage_method || 'directo'}`
+              '🎬 Video MP4 subido exitosamente', 
+              `"${title}" (${fileSizeMB}MB) - Almacenamiento: ${result.storage_method === 'chunked' ? 'Optimizado para archivos grandes' : 'Directo'}`
             );
             clearVideoForm();
             loadInitialData();
+            return;
           } else {
             const error = await response.json();
-            showErrorToast('Error al subir MP4', error.detail || 'Error al subir archivo MP4');
+            showErrorToast('❌ Error al subir MP4', error.detail || 'Error al subir archivo MP4');
+            return;
           }
         } catch (uploadError) {
           if (uploadError.name === 'AbortError') {
-            showErrorToast('Timeout', 'El archivo es muy grande y la subida se agotó. Intente con un archivo más pequeño.');
+            showErrorToast('⏱️ Tiempo agotado', 'El archivo es muy grande. Intente con un archivo más pequeño o verifique su conexión.');
           } else {
-            showErrorToast('Error de red', 'Error de conexión durante la subida');
+            showErrorToast('🌐 Error de red', 'Error de conexión durante la subida');
+          }
+          return;
+        } finally {
+          // Reset upload button
+          if (uploadButton) {
+            uploadButton.disabled = false;
+            uploadButton.textContent = 'Subir Video';
           }
         }
-        return;
       }
 
       // For YouTube and Vimeo, use JSON API
@@ -543,15 +570,26 @@ function App() {
       });
 
       if (response.ok) {
-        showSuccessToast('Video subido', 'Video subido exitosamente');
+        const result = await response.json();
+        if (videoType === 'youtube') {
+          showSuccessToast('🎬 Video de YouTube agregado', `"${title}" agregado exitosamente desde YouTube`);
+        } else if (videoType === 'vimeo') {
+          showSuccessToast('🎬 Video de Vimeo agregado', `"${title}" agregado exitosamente desde Vimeo`);
+        }
         clearVideoForm();
         loadInitialData();
       } else {
         const error = await response.json();
-        showErrorToast('Error al subir video', error.detail || 'Error al subir video');
+        showErrorToast(`❌ Error al agregar video de ${videoType.toUpperCase()}`, error.detail || `Error al crear video de ${videoType}`);
       }
     } catch (error) {
-      showErrorToast('Error de conexión', 'No se pudo conectar con el servidor');
+      showErrorToast('🌐 Error de conexión', 'No se pudo conectar con el servidor. Verifique su conexión a internet.');
+    } finally {
+      // Reset upload button
+      if (uploadButton) {
+        uploadButton.disabled = false;
+        uploadButton.textContent = 'Subir Video';
+      }
     }
   };
 
