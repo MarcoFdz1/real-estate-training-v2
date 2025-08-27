@@ -9,6 +9,7 @@ import VideoCard from './components/VideoCard';
 import AdaptiveVideoCard from './components/AdaptiveVideoCard';
 import VideoDetail from './components/VideoDetail';
 import ProgressDashboard from './components/ProgressDashboard';
+import { useAdaptiveStreaming } from './hooks/useAdaptiveStreaming';
 import ToastContainer, { 
   showSuccessToast, 
   showErrorToast, 
