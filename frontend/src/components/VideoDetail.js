@@ -152,7 +152,7 @@ const VideoDetail = ({
           <div className="lg:col-span-2 space-y-6">
             {/* Video Player or Thumbnail */}
             {showPlayer ? (
-              <UniversalVideoPlayer
+              <AdaptiveVideoPlayer
                 video={video}
                 userEmail={userEmail}
                 videoId={video.id}
