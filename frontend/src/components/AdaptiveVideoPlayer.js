@@ -424,14 +424,23 @@ const AdaptiveVideoPlayer = ({
         />
       );
     } else if (video.video_type === 'mp4') {
+      // Determine video source based on storage method
+      let videoSrc = video.mp4_url;
+      
+      if (video.mp4_url && video.mp4_url.startsWith('chunked://')) {
+        // For chunked files, use the streaming endpoint
+        videoSrc = `${process.env.REACT_APP_BACKEND_URL}/api/videos/${video.id}/mp4-stream`;
+      }
+      
       return (
         <video
           ref={videoRef}
-          src={video.mp4_url}
+          src={videoSrc}
           className="w-full h-full object-cover"
           controls={false}
           preload={streamingSettings.preload}
           playsInline
+          crossOrigin="anonymous"
         />
       );
     }
