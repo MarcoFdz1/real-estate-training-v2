@@ -834,11 +834,29 @@ async def upload_mp4_video(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al subir archivo: {str(e)}")
 
-# Video management endpoints
 @api_router.get("/videos", response_model=List[Video])
 async def get_all_videos():
     videos = await db.videos.find().to_list(1000)
-    return [Video(**video) for video in videos]
+    
+    # Add backward compatibility for videos without video_type
+    processed_videos = []
+    for video in videos:
+        if 'video_type' not in video or not video['video_type']:
+            video['video_type'] = 'youtube'  # Default to youtube for existing videos
+        
+        # Ensure all required fields exist
+        if 'youtubeId' not in video:
+            video['youtubeId'] = None
+        if 'vimeoId' not in video:
+            video['vimeoId'] = None
+        if 'mp4_url' not in video:
+            video['mp4_url'] = None
+        if 'mp4_filename' not in video:
+            video['mp4_filename'] = None
+            
+        processed_videos.append(Video(**video))
+    
+    return processed_videos
 
 # Enhanced video creation endpoint
 @api_router.post("/videos", response_model=Video)
