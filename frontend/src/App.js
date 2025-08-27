@@ -21,6 +21,14 @@ import './App.css';
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
 function App() {
+  // Adaptive streaming hook
+  const {
+    isMobile,
+    connectionSpeed,
+    shouldUseLowBandwidthMode,
+    getStreamingSettings
+  } = useAdaptiveStreaming();
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [userEmail, setUserEmail] = useState('');
