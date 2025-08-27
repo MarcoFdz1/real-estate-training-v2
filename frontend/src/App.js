@@ -571,6 +571,19 @@ function App() {
     toggleVideoInputs('youtube'); // Reset to default
   };
 
+  // Initialize default form state
+  useEffect(() => {
+    if (currentView === 'admin') {
+      // Set initial state for video form
+      setTimeout(() => {
+        const videoTypeSelector = document.getElementById('videoType');
+        if (videoTypeSelector) {
+          toggleVideoInputs(videoTypeSelector.value || 'youtube');
+        }
+      }, 100);
+    }
+  }, [currentView]);
+
   const toggleVideoInputs = (videoType) => {
     const urlInput = document.getElementById('videoUrl');
     const mp4FileInput = document.getElementById('mp4File');
