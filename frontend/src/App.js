@@ -5,6 +5,7 @@ import {
   Film, Users, Edit, Trash2, X, BarChart3, Home, 
   TrendingUp, Eye, Play, Plus, Edit3, Folder
 } from 'lucide-react';
+import VideoCard from './components/VideoCard';
 import AdaptiveVideoCard from './components/AdaptiveVideoCard';
 import VideoDetail from './components/VideoDetail';
 import ProgressDashboard from './components/ProgressDashboard';
