@@ -96,7 +96,19 @@ const VideoDetail = ({
   };
 
   const handlePlayClick = () => {
-    setShowPlayer(true);
+    try {
+      setShowPlayer(true);
+    } catch (error) {
+      console.error('Error starting video playback:', error);
+      // Fallback: Open video in new tab
+      if (video.video_type === 'youtube' && video.youtubeId) {
+        window.open(`https://www.youtube.com/watch?v=${video.youtubeId}`, '_blank');
+      } else if (video.video_type === 'vimeo' && video.vimeoId) {
+        window.open(`https://vimeo.com/${video.vimeoId}`, '_blank');
+      } else if (video.video_type === 'mp4' && video.url) {
+        window.open(video.url, '_blank');
+      }
+    }
   };
 
   const formatDate = (dateString) => {
