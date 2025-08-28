@@ -278,6 +278,10 @@ const UniversalVideoPlayer = ({
   };
 
   const startProgressTracking = (getTimeFunction) => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    
     progressIntervalRef.current = setInterval(async () => {
       try {
         let timeData;
@@ -288,18 +292,28 @@ const UniversalVideoPlayer = ({
           return;
         }
 
+        if (!timeData || typeof timeData !== 'object') {
+          return;
+        }
+
         const { currentTime, duration } = timeData;
-        const progressPercentage = (currentTime / duration) * 100;
+        
+        if (isNaN(currentTime) || isNaN(duration) || duration <= 0) {
+          return;
+        }
+        
+        const progressPercentage = Math.min(100, Math.max(0, (currentTime / duration) * 100));
         
         setCurrentTime(currentTime);
         setProgress(progressPercentage);
         
         // Update progress on server every 10 seconds
-        if (Math.floor(currentTime) % 10 === 0) {
+        if (Math.floor(currentTime) % 10 === 0 && currentTime > 0) {
           updateVideoProgress(progressPercentage, currentTime, progressPercentage >= 90);
         }
       } catch (error) {
         console.error('Error tracking progress:', error);
+        // Don't stop tracking on errors, just skip this iteration
       }
     }, 1000);
   };
