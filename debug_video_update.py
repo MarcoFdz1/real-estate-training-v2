@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BACKEND_URL = "https://814fd4b1-15b6-4a3a-bbf6-7f00f94eded3.preview.emergentagent.com"
+BACKEND_URL = "https://proptech-videos.preview.emergentagent.com"
 API_URL = f"{BACKEND_URL}/api"
 
 def debug_video_update():

@@ -16,7 +16,7 @@ import sys
 from datetime import datetime
 
 # Get the backend URL from the frontend .env file
-BACKEND_URL = "https://814fd4b1-15b6-4a3a-bbf6-7f00f94eded3.preview.emergentagent.com"
+BACKEND_URL = "https://proptech-videos.preview.emergentagent.com"
 API_URL = f"{BACKEND_URL}/api"
 
 # Admin credentials as specified in the review request
