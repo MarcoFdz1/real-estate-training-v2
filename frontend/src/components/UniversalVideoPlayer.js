@@ -140,17 +140,44 @@ const UniversalVideoPlayer = ({
   };
 
   const initializeVimeoPlayer = () => {
-    // Load Vimeo Player API
-    const script = document.createElement('script');
-    script.src = 'https://player.vimeo.com/api/player.js';
-    document.head.appendChild(script);
+    try {
+      // Check if Vimeo Player API is already loaded
+      if (window.Vimeo && window.Vimeo.Player) {
+        createVimeoPlayer();
+        return;
+      }
 
-    script.onload = () => {
+      // Load Vimeo Player API
+      if (!document.querySelector('script[src*="player.vimeo.com"]')) {
+        const script = document.createElement('script');
+        script.src = 'https://player.vimeo.com/api/player.js';
+        script.onerror = () => {
+          console.error('Failed to load Vimeo API');
+          createVimeoFallback();
+        };
+        document.head.appendChild(script);
+
+        script.onload = () => {
+          createVimeoPlayer();
+        };
+      }
+    } catch (error) {
+      console.error('Error initializing Vimeo player:', error);
+      createVimeoFallback();
+    }
+  };
+
+  const createVimeoPlayer = () => {
+    try {
       const iframe = document.getElementById(`vimeo-player-${videoId}`);
+      if (!iframe) return;
+      
       const player = new window.Vimeo.Player(iframe);
 
       player.getDuration().then(duration => {
         setDuration(duration);
+      }).catch(error => {
+        console.error('Error getting Vimeo duration:', error);
       });
 
       player.on('play', () => {
@@ -175,9 +202,33 @@ const UniversalVideoPlayer = ({
         handleVideoComplete();
       });
 
+      player.on('error', (error) => {
+        console.error('Vimeo player error:', error);
+        createVimeoFallback();
+      });
+
       // Store player reference
       window[`player_${videoId}`] = player;
-    };
+    } catch (error) {
+      console.error('Error creating Vimeo player:', error);
+      createVimeoFallback();
+    }
+  };
+
+  const createVimeoFallback = () => {
+    const container = document.getElementById(`vimeo-player-${videoId}`);
+    if (container && container.parentNode) {
+      container.parentNode.innerHTML = `
+        <iframe
+          src="https://player.vimeo.com/video/${video.vimeoId}?autoplay=${autoPlay ? 1 : 0}&controls=1"
+          width="100%"
+          height="100%"
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      `;
+    }
   };
 
   const initializeMP4Player = () => {
