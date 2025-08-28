@@ -169,13 +169,27 @@ const VideoDetail = ({
           <div className="lg:col-span-2 space-y-6">
             {/* Video Player or Thumbnail */}
             {showPlayer ? (
-              <AdaptiveVideoPlayer
-                video={video}
-                userEmail={userEmail}
-                videoId={video.id}
-                onProgressUpdate={handleProgressUpdate}
-                autoPlay={true}
-              />
+              useSimplePlayer ? (
+                <SimpleVideoPlayer
+                  video={video}
+                  userEmail={userEmail}
+                  autoPlay={true}
+                  onProgressUpdate={handleProgressUpdate}
+                  theme={theme}
+                />
+              ) : (
+                <AdaptiveVideoPlayer
+                  video={video}
+                  userEmail={userEmail}
+                  videoId={video.id}
+                  onProgressUpdate={handleProgressUpdate}
+                  autoPlay={true}
+                  onError={() => {
+                    setPlayerError(true);
+                    setUseSimplePlayer(true);
+                  }}
+                />
+              )
             ) : (
               <div className="relative group">
                 <img
