@@ -34,6 +34,8 @@ const VideoDetail = ({
   const [progress, setProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showPlayer, setShowPlayer] = useState(false);
+  const [playerError, setPlayerError] = useState(false);
+  const [useSimplePlayer, setUseSimplePlayer] = useState(false);
 
   useEffect(() => {
     loadVideoDetails();
