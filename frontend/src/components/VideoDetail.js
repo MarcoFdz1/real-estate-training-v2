@@ -18,6 +18,7 @@ import {
 import VideoPlayer from './VideoPlayer';
 import UniversalVideoPlayer from './UniversalVideoPlayer';
 import AdaptiveVideoPlayer from './AdaptiveVideoPlayer';
+import SimpleVideoPlayer from './SimpleVideoPlayer';
 import NetworkStatsCard from './NetworkStatsCard';
 import VideoCard from './VideoCard';
 
