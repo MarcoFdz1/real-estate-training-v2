@@ -101,16 +101,17 @@ const VideoDetail = ({
   const handlePlayClick = () => {
     try {
       setShowPlayer(true);
+      setPlayerError(false);
+      
+      // If we've had errors before, use simple player
+      if (playerError) {
+        setUseSimplePlayer(true);
+      }
     } catch (error) {
       console.error('Error starting video playback:', error);
-      // Fallback: Open video in new tab
-      if (video.video_type === 'youtube' && video.youtubeId) {
-        window.open(`https://www.youtube.com/watch?v=${video.youtubeId}`, '_blank');
-      } else if (video.video_type === 'vimeo' && video.vimeoId) {
-        window.open(`https://vimeo.com/${video.vimeoId}`, '_blank');
-      } else if (video.video_type === 'mp4' && video.url) {
-        window.open(video.url, '_blank');
-      }
+      setPlayerError(true);
+      setUseSimplePlayer(true);
+      setShowPlayer(true);
     }
   };
 
