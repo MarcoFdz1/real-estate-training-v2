@@ -232,17 +232,22 @@ const UniversalVideoPlayer = ({
   };
 
   const initializeMP4Player = () => {
-    const videoElement = videoRef.current;
-    if (videoElement) {
+    try {
+      const videoElement = videoRef.current;
+      if (!videoElement) {
+        console.error('Video element not found for MP4 player');
+        return;
+      }
+
       videoElement.addEventListener('loadedmetadata', () => {
-        setDuration(videoElement.duration);
+        setDuration(videoElement.duration || 0);
       });
 
       videoElement.addEventListener('play', () => {
         setIsPlaying(true);
         startProgressTracking(() => ({
-          currentTime: videoElement.currentTime,
-          duration: videoElement.duration
+          currentTime: videoElement.currentTime || 0,
+          duration: videoElement.duration || 0
         }));
       });
 
@@ -257,9 +262,18 @@ const UniversalVideoPlayer = ({
         handleVideoComplete();
       });
 
+      videoElement.addEventListener('error', (error) => {
+        console.error('MP4 video error:', error);
+        // Could show error message or fallback
+      });
+
       if (autoPlay) {
-        videoElement.play();
+        videoElement.play().catch(error => {
+          console.error('Autoplay failed:', error);
+        });
       }
+    } catch (error) {
+      console.error('Error initializing MP4 player:', error);
     }
   };
 
